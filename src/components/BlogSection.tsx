@@ -1,34 +1,12 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { ArrowRight } from "lucide-react";
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "Understanding Anxiety: Signs You Shouldn't Ignore",
-    excerpt: "Anxiety is more than just worry. Learn to recognize the physical and emotional signs that indicate it's time to seek support.",
-    date: "Feb 15, 2026",
-    tag: "Mental Health",
-  },
-  {
-    id: 2,
-    title: "How CBT Can Transform Your Thought Patterns",
-    excerpt: "Cognitive Behavioral Therapy helps you identify and reshape negative thinking. Here's how it works in practice.",
-    date: "Jan 28, 2026",
-    tag: "Therapy",
-  },
-  {
-    id: 3,
-    title: "The Power of Hypnotherapy for Stress Relief",
-    excerpt: "Hypnotherapy isn't magic — it's science. Discover how guided relaxation can unlock deep healing and resilience.",
-    date: "Jan 10, 2026",
-    tag: "Hypnotherapy",
-  },
-];
+import { ArrowRight, Clock, Tag } from "lucide-react";
+import { getPosts } from "@/lib/blogStorage";
+import { Button } from "@/components/ui/button";
 
 const BlogSection = () => {
   const ref = useScrollReveal();
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const posts = getPosts().slice(0, 3);
 
   return (
     <section id="blog" className="section-container">
@@ -39,26 +17,37 @@ const BlogSection = () => {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {blogPosts.map((post) => (
+          {posts.map((post) => (
             <article key={post.id} className="glass-card flex flex-col">
-              <span className="text-xs font-body text-primary bg-primary/10 self-start px-3 py-1 rounded-full mb-3">
-                {post.tag}
-              </span>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-body text-primary bg-primary/10 px-3 py-1 rounded-full flex items-center gap-1">
+                  <Tag className="w-3 h-3" /> {post.tag}
+                </span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {post.readTime} min
+                </span>
+              </div>
               <h3 className="font-heading font-semibold text-foreground text-lg mb-2 leading-snug">{post.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                {expanded === post.id ? post.excerpt : post.excerpt.slice(0, 100) + "…"}
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-3">{post.excerpt}</p>
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                 <span className="text-xs text-muted-foreground">{post.date}</span>
-                <button
-                  onClick={() => setExpanded(expanded === post.id ? null : post.id)}
+                <Link
+                  to={`/blog/${post.id}`}
                   className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body"
                 >
-                  {expanded === post.id ? "Less" : "Read more"} <ArrowRight className="w-3 h-3" />
-                </button>
+                  Read more <ArrowRight className="w-3 h-3" />
+                </Link>
               </div>
             </article>
           ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link to="/blog">
+            <Button variant="outline" className="gap-2">
+              View All Posts <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
