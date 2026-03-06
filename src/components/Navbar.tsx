@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
@@ -7,7 +8,7 @@ const navLinks = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Experience", href: "#experience" },
-  { label: "Blog", href: "#blog" },
+  { label: "Blog", href: "/blog", isRoute: true },
   { label: "Booking", href: "#booking" },
   { label: "Contact", href: "#contact" },
 ];
