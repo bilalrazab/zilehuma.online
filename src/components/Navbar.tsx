@@ -16,12 +16,23 @@ const navLinks = [
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleNavClick = (l: typeof navLinks[0]) => {
+    setOpen(false);
+    if ((l as any).isRoute) {
+      navigate(l.href);
+    } else if (location.pathname !== "/") {
+      navigate("/" + l.href);
+    }
+  };
 
   return (
     <nav
@@ -30,7 +41,7 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-        <a href="#home" className="font-heading text-lg font-bold text-foreground">
+        <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="font-heading text-lg font-bold text-foreground">
           Zil-e-Huma
         </a>
 
@@ -40,6 +51,7 @@ const Navbar = () => {
             <a
               key={l.href}
               href={l.href}
+              onClick={(e) => { if ((l as any).isRoute) { e.preventDefault(); handleNavClick(l); } }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {l.label}
@@ -64,7 +76,7 @@ const Navbar = () => {
             <a
               key={l.href}
               href={l.href}
-              onClick={() => setOpen(false)}
+              onClick={(e) => { if ((l as any).isRoute) { e.preventDefault(); } handleNavClick(l); }}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
             >
               {l.label}
