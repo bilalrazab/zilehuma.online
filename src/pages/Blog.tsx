@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getPosts, toggleLike, deletePost, BlogPost } from "@/lib/blogStorage";
+import { getPosts, toggleLike, deletePost, verifyPassword, BlogPost } from "@/lib/blogStorage";
 import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import PasswordDialog from "@/components/PasswordDialog";
 
 const TAGS = ["All", "Mental Health", "Therapy", "Hypnotherapy", "Self-Care", "Relationships", "Wellness"];
 
@@ -14,6 +15,7 @@ const Blog = () => {
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState("All");
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const perPage = 6;
 
   const filtered = useMemo(() => {
@@ -35,19 +37,29 @@ const Blog = () => {
     setPosts(getPosts());
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Delete this post?")) {
-      deletePost(id);
+  const handleDeleteClick = (id: string) => {
+    setDeleteTarget(id);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      deletePost(deleteTarget);
       setPosts(getPosts());
+      setDeleteTarget(null);
     }
   };
 
   return (
     <>
       <Navbar />
+      <PasswordDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onSuccess={handleDeleteConfirm}
+        action="delete this post"
+      />
       <main className="min-h-screen pt-24 pb-12">
         <div className="section-container !py-8">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-3 transition-colors">
@@ -63,35 +75,20 @@ const Blog = () => {
             </Link>
           </div>
 
-          {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search articles..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="pl-10 rounded-full"
-              />
+              <Input placeholder="Search articles..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-10 rounded-full" />
             </div>
             <div className="flex flex-wrap gap-2">
               {TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => { setActiveTag(tag); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-body transition-all duration-200 ${
-                    activeTag === tag
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  }`}
-                >
+                <button key={tag} onClick={() => { setActiveTag(tag); setPage(1); }} className={`px-3 py-1.5 rounded-full text-xs font-body transition-all duration-200 ${activeTag === tag ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}>
                   {tag}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Grid */}
           {paged.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
               <p className="text-lg">No posts found.</p>
@@ -118,27 +115,15 @@ const Blog = () => {
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground">{post.date}</span>
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className={`flex items-center gap-1 text-xs transition-colors ${
-                          post.likedByUser ? "text-destructive" : "text-muted-foreground hover:text-destructive"
-                        }`}
-                      >
+                      <button onClick={() => handleLike(post.id)} className={`flex items-center gap-1 text-xs transition-colors ${post.likedByUser ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}>
                         <Heart className={`w-3.5 h-3.5 ${post.likedByUser ? "fill-current" : ""}`} />
                         {post.likes}
                       </button>
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="text-muted-foreground hover:text-destructive transition-colors"
-                        title="Delete"
-                      >
+                      <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <Link
-                      to={`/blog/${post.id}`}
-                      className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body"
-                    >
+                    <Link to={`/blog/${post.id}`} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body">
                       Read <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
@@ -147,36 +132,17 @@ const Blog = () => {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-10">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
+              <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>
                 <ArrowLeft className="w-4 h-4" />
               </Button>
               {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage(i + 1)}
-                  className={`w-8 h-8 rounded-full text-sm font-body transition-all ${
-                    page === i + 1
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
+                <button key={i} onClick={() => setPage(i + 1)} className={`w-8 h-8 rounded-full text-sm font-body transition-all ${page === i + 1 ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
                   {i + 1}
                 </button>
               ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-              >
+              <Button variant="ghost" size="sm" disabled={page === totalPages} onClick={() => setPage(page + 1)}>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
