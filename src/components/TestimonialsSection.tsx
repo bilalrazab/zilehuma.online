@@ -107,7 +107,7 @@ const TestimonialsSection = () => {
 
   return (
     <section id="testimonials" className="relative overflow-hidden">
-      <div className="section-container" ref={ref} style={{ opacity: 0 }}>
+      <div className="section-container" ref={ref} style={{ opacity: 1 }}>
         <div className="text-center mb-14">
           <span className="text-primary text-sm font-medium tracking-widest uppercase">
             Testimonials
