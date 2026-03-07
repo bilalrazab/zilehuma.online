@@ -10,9 +10,15 @@ export interface BlogPost {
   readTime: number;
   likes: number;
   likedByUser: boolean;
+  youtubeUrl?: string;
 }
 
 const STORAGE_KEY = "zh_blog_posts";
+const BLOG_PASSWORD = "Tddua@2026";
+
+export function verifyPassword(password: string): boolean {
+  return password === BLOG_PASSWORD;
+}
 
 const defaultPosts: BlogPost[] = [
   {

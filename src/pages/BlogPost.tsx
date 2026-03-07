@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import PasswordDialog from "@/components/PasswordDialog";
+
+const extractYouTubeId = (url: string): string | null => {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+};
 
 const BlogPostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(() => getPost(id || ""));
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   if (!post) {
     return (
@@ -32,14 +39,14 @@ const BlogPostPage = () => {
     setPost(getPost(post.id));
   };
 
-  const handleDelete = () => {
-    if (confirm("Delete this post permanently?")) {
-      deletePost(post.id);
-      navigate("/blog");
-    }
+  const handleDeleteConfirm = () => {
+    deletePost(post.id);
+    setShowDeletePassword(false);
+    navigate("/blog");
   };
 
-  // Simple markdown-ish rendering
+  const ytId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null;
+
   const renderContent = (content: string) => {
     return content.split("\n").map((line, i) => {
       if (line.startsWith("## ")) {
@@ -62,7 +69,6 @@ const BlogPostPage = () => {
         return <li key={i} className="ml-4 list-decimal text-muted-foreground leading-relaxed mb-1">{line.replace(/^\d+\.\s/, "")}</li>;
       }
       if (line.trim() === "") return <br key={i} />;
-      // Bold inline
       const parts = line.split(/\*\*(.+?)\*\*/g);
       return (
         <p key={i} className="text-muted-foreground leading-relaxed mb-2">
@@ -75,6 +81,12 @@ const BlogPostPage = () => {
   return (
     <>
       <Navbar />
+      <PasswordDialog
+        open={showDeletePassword}
+        onClose={() => setShowDeletePassword(false)}
+        onSuccess={handleDeleteConfirm}
+        action="delete this post"
+      />
       <main className="min-h-screen pt-24 pb-12">
         <article className="max-w-3xl mx-auto px-4 sm:px-6">
           <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-6 transition-colors">
@@ -100,6 +112,18 @@ const BlogPostPage = () => {
             </div>
           )}
 
+          {ytId && (
+            <div className="rounded-3xl overflow-hidden mb-8 aspect-video">
+              <iframe
+                src={`https://www.youtube.com/embed/${ytId}`}
+                title="YouTube video"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          )}
+
           <div className="glass-card !p-8 sm:!p-10 mb-8">
             {renderContent(post.content)}
           </div>
@@ -116,7 +140,7 @@ const BlogPostPage = () => {
               <Heart className={`w-4 h-4 ${post.likedByUser ? "fill-current" : ""}`} />
               {post.likes} {post.likes === 1 ? "like" : "likes"}
             </button>
-            <Button variant="ghost" size="sm" onClick={handleDelete} className="text-muted-foreground hover:text-destructive gap-1">
+            <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
               <Trash2 className="w-4 h-4" /> Delete
             </Button>
           </div>
