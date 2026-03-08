@@ -37,6 +37,11 @@ const Navbar = () => {
     // If we're not on the home page, navigate to home with the hash
     if (location.pathname !== "/") {
       navigate("/" + l.href);
+      // Wait for navigation then scroll
+      setTimeout(() => {
+        const el = document.querySelector(l.href);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      }, 300);
     } else {
       // Scroll to the section on the current page
       const el = document.querySelector(l.href);
