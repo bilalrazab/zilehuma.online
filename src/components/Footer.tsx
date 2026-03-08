@@ -61,6 +61,12 @@ const Footer = () => (
       </div>
 
       <p className="text-xs text-muted-foreground mt-5">© {new Date().getFullYear()} All rights reserved.</p>
+      <p className="text-xs text-muted-foreground mt-2">
+        Developed by{" "}
+        <a href="https://bilal-razab.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          Bilal Razab
+        </a>
+      </p>
     </div>
   </footer>
 );
