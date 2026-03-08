@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { CalendarDays, Sparkles } from "lucide-react";
 
@@ -32,16 +33,16 @@ const HeroSection = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button size="lg" asChild>
-              <a href="#booking">
+              <Link to="/#booking">
                 <CalendarDays className="w-4 h-4" />
                 Book Online Session
-              </a>
+              </Link>
             </Button>
             <Button variant="glass" size="lg" asChild>
-              <a href="#services">
+              <Link to="/#services">
                 <Sparkles className="w-4 h-4" />
                 View Services
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
