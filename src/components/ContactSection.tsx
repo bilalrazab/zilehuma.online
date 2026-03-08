@@ -36,6 +36,13 @@ const ContactSection = () => {
                 <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
               </a>
             </Button>
+
+            <div className="flex gap-3 mt-2">
+              <a href="https://www.instagram.com/mindframe_mentality/" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Instagram</a>
+              <a href="https://www.linkedin.com/in/Zilehuma-Suleman" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">LinkedIn</a>
+              <a href="https://www.tiktok.com/@zile_humaa" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">TikTok</a>
+              <a href="https://oladoc.com/pakistan/islamabad/dr/psychologist/zile-huma-suleman/2856455" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">Oladoc</a>
+            </div>
           </div>
 
           <div className="glass-card p-2 overflow-hidden">
