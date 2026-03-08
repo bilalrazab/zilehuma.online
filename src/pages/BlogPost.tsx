@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PasswordDialog from "@/components/PasswordDialog";
+import SocialShare from "@/components/SocialShare";
 
 const extractYouTubeId = (url: string): string | null => {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([a-zA-Z0-9_-]{11})/);
