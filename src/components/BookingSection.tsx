@@ -147,13 +147,17 @@ const BookingSection = () => {
             ))}
           </div>
 
-          <textarea
-            placeholder="Your message (optional)"
-            rows={3}
-            value={form.message}
-            onChange={(e) => set("message", e.target.value)}
-            className={inputClass("message")}
-          />
+          <div>
+            <label htmlFor="booking-message" className="text-xs text-muted-foreground mb-1 block font-body">Message (optional)</label>
+            <textarea
+              id="booking-message"
+              placeholder="Your message (optional)"
+              rows={3}
+              value={form.message}
+              onChange={(e) => set("message", e.target.value)}
+              className={inputClass("message")}
+            />
+          </div>
 
           <Button type="submit" size="lg" className="w-full">
             <Send className="w-4 h-4" /> Send via WhatsApp
