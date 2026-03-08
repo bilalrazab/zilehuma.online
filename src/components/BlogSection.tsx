@@ -50,6 +50,7 @@ const BlogSectionContent = ({ posts }: { posts: BlogPost[] }) => {
                 <Link
                   to={`/blog/${post.id}`}
                   className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body"
+                  aria-label={`Read more about ${post.title}`}
                 >
                   Read more <ArrowRight className="w-3 h-3" />
                 </Link>
