@@ -216,17 +216,20 @@ const BlogPostPage = () => {
             {renderContent(post.content)}
           </div>
 
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleLike}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Heart className="w-4 h-4" />
-              {post.likes} {post.likes === 1 ? "like" : "likes"}
-            </button>
-            <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
-              <Trash2 className="w-4 h-4" /> Delete
-            </Button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLike}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Heart className="w-4 h-4" />
+                {post.likes} {post.likes === 1 ? "like" : "likes"}
+              </button>
+              <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
+                <Trash2 className="w-4 h-4" /> Delete
+              </Button>
+            </div>
+            <SocialShare url={window.location.href} title={post.title} excerpt={post.excerpt} />
           </div>
         </article>
       </main>
