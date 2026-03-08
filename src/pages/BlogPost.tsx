@@ -73,35 +73,97 @@ const BlogPostPage = () => {
     return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
-  const renderContent = (content: string) => {
-    return content.split("\n").map((line, i) => {
-      if (line.startsWith("## ")) {
-        return <h2 key={i} className="font-heading text-xl font-semibold text-foreground mt-8 mb-3">{line.slice(3)}</h2>;
+  const parseInline = (text: string) => {
+    // Handle **bold**, *italic*, and `code`
+    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+    return parts.map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={j} className="text-foreground font-semibold">{part.slice(2, -2)}</strong>;
       }
-      if (line.startsWith("- **")) {
-        const match = line.match(/^- \*\*(.+?)\*\*:?\s*(.*)/);
-        if (match) {
-          return (
-            <li key={i} className="ml-4 text-muted-foreground leading-relaxed mb-1">
-              <strong className="text-foreground">{match[1]}</strong>{match[2] ? `: ${match[2]}` : ""}
-            </li>
-          );
-        }
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return <em key={j} className="italic">{part.slice(1, -1)}</em>;
       }
-      if (line.startsWith("- ")) {
-        return <li key={i} className="ml-4 text-muted-foreground leading-relaxed mb-1">{line.slice(2)}</li>;
+      if (part.startsWith("`") && part.endsWith("`")) {
+        return <code key={j} className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-primary">{part.slice(1, -1)}</code>;
       }
-      if (/^\d+\.\s/.test(line)) {
-        return <li key={i} className="ml-4 list-decimal text-muted-foreground leading-relaxed mb-1">{line.replace(/^\d+\.\s/, "")}</li>;
-      }
-      if (line.trim() === "") return <br key={i} />;
-      const parts = line.split(/\*\*(.+?)\*\*/g);
-      return (
-        <p key={i} className="text-muted-foreground leading-relaxed mb-2">
-          {parts.map((part, j) => (j % 2 === 1 ? <strong key={j} className="text-foreground">{part}</strong> : part))}
-        </p>
-      );
+      return part;
     });
+  };
+
+  const renderContent = (content: string) => {
+    const lines = content.split("\n");
+    const elements: React.ReactNode[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Headings
+      if (line.startsWith("### ")) {
+        elements.push(<h3 key={i} className="font-heading text-lg font-semibold text-foreground mt-6 mb-2">{parseInline(line.slice(4))}</h3>);
+        i++; continue;
+      }
+      if (line.startsWith("## ")) {
+        elements.push(<h2 key={i} className="font-heading text-xl font-semibold text-foreground mt-8 mb-3">{parseInline(line.slice(3))}</h2>);
+        i++; continue;
+      }
+      if (line.startsWith("# ")) {
+        elements.push(<h2 key={i} className="font-heading text-2xl font-bold text-foreground mt-8 mb-3">{parseInline(line.slice(2))}</h2>);
+        i++; continue;
+      }
+
+      // Blockquote
+      if (line.startsWith("> ")) {
+        elements.push(
+          <blockquote key={i} className="border-l-4 border-primary/40 pl-4 py-2 my-4 italic text-muted-foreground bg-primary/5 rounded-r-lg">
+            {parseInline(line.slice(2))}
+          </blockquote>
+        );
+        i++; continue;
+      }
+
+      // Horizontal rule
+      if (/^---+$/.test(line.trim())) {
+        elements.push(<hr key={i} className="border-border my-6" />);
+        i++; continue;
+      }
+
+      // Unordered list items (collect consecutive)
+      if (line.startsWith("- ")) {
+        const listItems: React.ReactNode[] = [];
+        while (i < lines.length && lines[i].startsWith("- ")) {
+          listItems.push(<li key={i} className="text-muted-foreground leading-relaxed">{parseInline(lines[i].slice(2))}</li>);
+          i++;
+        }
+        elements.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-1 my-3 ml-2">{listItems}</ul>);
+        continue;
+      }
+
+      // Ordered list items (collect consecutive)
+      if (/^\d+\.\s/.test(line)) {
+        const listItems: React.ReactNode[] = [];
+        while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+          listItems.push(<li key={i} className="text-muted-foreground leading-relaxed">{parseInline(lines[i].replace(/^\d+\.\s/, ""))}</li>);
+          i++;
+        }
+        elements.push(<ol key={`ol-${i}`} className="list-decimal list-inside space-y-1 my-3 ml-2">{listItems}</ol>);
+        continue;
+      }
+
+      // Empty line
+      if (line.trim() === "") {
+        elements.push(<div key={i} className="h-3" />);
+        i++; continue;
+      }
+
+      // Normal paragraph
+      elements.push(
+        <p key={i} className="text-muted-foreground leading-relaxed mb-3">{parseInline(line)}</p>
+      );
+      i++;
+    }
+
+    return elements;
   };
 
   return (
