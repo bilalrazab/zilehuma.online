@@ -6,8 +6,8 @@ import { getPosts, type BlogPost } from "@/lib/blogStorage";
 import { Button } from "@/components/ui/button";
 
 const BlogSection = () => {
-  const ref = useScrollReveal();
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const ref = useScrollReveal();
 
   useEffect(() => {
     getPosts().then((data) => setPosts(data.slice(0, 3)));
