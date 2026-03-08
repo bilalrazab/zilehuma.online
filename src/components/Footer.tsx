@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Instagram, Linkedin, MessageCircle, ExternalLink, Facebook, Twitter } from "lucide-react";
 
 const TikTokIcon = (props: any) => (
@@ -18,15 +18,40 @@ const socials = [
 ];
 
 const siteLinks = [
-  { label: "Home", to: "/" },
-  { label: "About", to: "/#about" },
-  { label: "Services", to: "/#services" },
-  { label: "Blog", to: "/blog" },
-  { label: "Booking", to: "/#booking" },
-  { label: "Contact", to: "/#contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "#about" },
+  { label: "Services", href: "#services" },
+  { label: "Blog", href: "/blog", isRoute: true },
+  { label: "Booking", href: "#booking" },
+  { label: "Contact", href: "#contact" },
 ];
 
-const Footer = () => (
+const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = (e: React.MouseEvent, link: typeof siteLinks[0]) => {
+    e.preventDefault();
+    if (link.isRoute) {
+      navigate(link.href);
+      return;
+    }
+    if (link.href === "/") {
+      navigate("/");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (location.pathname !== "/") {
+      navigate("/" + link.href);
+      setTimeout(() => {
+        document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
+      }, 300);
+    } else {
+      document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
   <footer className="border-t border-border py-10 text-center">
     <div className="max-w-6xl mx-auto px-4">
       <p className="font-heading text-foreground font-semibold mb-1">Zil-e-Huma Suleman</p>
@@ -34,13 +59,14 @@ const Footer = () => (
 
       <nav aria-label="Footer navigation" className="flex flex-wrap items-center justify-center gap-4 mt-5">
         {siteLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
+          <a
+            key={link.href}
+            href={link.isRoute ? link.href : link.href === "/" ? "/" : "/" + link.href}
+            onClick={(e) => handleClick(e, link)}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {link.label}
-          </Link>
+          </a>
         ))}
       </nav>
 
@@ -69,6 +95,7 @@ const Footer = () => (
       </p>
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;
