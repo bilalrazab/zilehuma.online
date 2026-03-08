@@ -72,27 +72,32 @@ const BookingSection = () => {
         <form onSubmit={handleSubmit} className="glass-card p-6 sm:p-8 space-y-5" noValidate>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <input placeholder="Full Name" value={form.name} onChange={(e) => set("name", e.target.value)} className={inputClass("name")} />
+              <label htmlFor="booking-name" className="text-xs text-muted-foreground mb-1 block font-body">Full Name</label>
+              <input id="booking-name" placeholder="Full Name" value={form.name} onChange={(e) => set("name", e.target.value)} className={inputClass("name")} />
               {errors.name && <span className="text-xs text-destructive mt-1 block">{errors.name}</span>}
             </div>
             <div>
-              <input type="email" placeholder="Email" value={form.email} onChange={(e) => set("email", e.target.value)} className={inputClass("email")} />
+              <label htmlFor="booking-email" className="text-xs text-muted-foreground mb-1 block font-body">Email</label>
+              <input id="booking-email" type="email" placeholder="Email" value={form.email} onChange={(e) => set("email", e.target.value)} className={inputClass("email")} />
               {errors.email && <span className="text-xs text-destructive mt-1 block">{errors.email}</span>}
             </div>
           </div>
 
-          <input placeholder="Phone Number" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputClass("phone")} />
-          {errors.phone && <span className="text-xs text-destructive mt-1 block">{errors.phone}</span>}
+          <div>
+            <label htmlFor="booking-phone" className="text-xs text-muted-foreground mb-1 block font-body">Phone Number</label>
+            <input id="booking-phone" placeholder="Phone Number" value={form.phone} onChange={(e) => set("phone", e.target.value)} className={inputClass("phone")} />
+            {errors.phone && <span className="text-xs text-destructive mt-1 block">{errors.phone}</span>}
+          </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block font-body">Preferred Date</label>
-              <input type="date" value={form.date} onChange={(e) => set("date", e.target.value)} className={inputClass("date")} />
+              <label htmlFor="booking-date" className="text-xs text-muted-foreground mb-1 block font-body">Preferred Date</label>
+              <input id="booking-date" type="date" value={form.date} onChange={(e) => set("date", e.target.value)} className={inputClass("date")} />
               {errors.date && <span className="text-xs text-destructive mt-1 block">{errors.date}</span>}
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block font-body">Session Type</label>
-              <select value={form.type} onChange={(e) => set("type", e.target.value)} className={inputClass("type")}>
+              <label htmlFor="booking-type" className="text-xs text-muted-foreground mb-1 block font-body">Session Type</label>
+              <select id="booking-type" value={form.type} onChange={(e) => set("type", e.target.value)} className={inputClass("type")} aria-label="Session Type">
                 <option value="">Select type…</option>
                 {sessionTypes.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -142,13 +147,17 @@ const BookingSection = () => {
             ))}
           </div>
 
-          <textarea
-            placeholder="Your message (optional)"
-            rows={3}
-            value={form.message}
-            onChange={(e) => set("message", e.target.value)}
-            className={inputClass("message")}
-          />
+          <div>
+            <label htmlFor="booking-message" className="text-xs text-muted-foreground mb-1 block font-body">Message (optional)</label>
+            <textarea
+              id="booking-message"
+              placeholder="Your message (optional)"
+              rows={3}
+              value={form.message}
+              onChange={(e) => set("message", e.target.value)}
+              className={inputClass("message")}
+            />
+          </div>
 
           <Button type="submit" size="lg" className="w-full">
             <Send className="w-4 h-4" /> Send via WhatsApp

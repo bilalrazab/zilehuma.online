@@ -1,14 +1,16 @@
+import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import AboutSection from "@/components/AboutSection";
-import ServicesSection from "@/components/ServicesSection";
-import ExperienceSection from "@/components/ExperienceSection";
-import BlogSection from "@/components/BlogSection";
-import BookingSection from "@/components/BookingSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import ContactSection from "@/components/ContactSection";
-import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
+
+const AboutSection = lazy(() => import("@/components/AboutSection"));
+const ServicesSection = lazy(() => import("@/components/ServicesSection"));
+const ExperienceSection = lazy(() => import("@/components/ExperienceSection"));
+const BlogSection = lazy(() => import("@/components/BlogSection"));
+const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
+const BookingSection = lazy(() => import("@/components/BookingSection"));
+const ContactSection = lazy(() => import("@/components/ContactSection"));
+const Footer = lazy(() => import("@/components/Footer"));
 
 const Index = () => {
   return (
@@ -17,15 +19,19 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <AboutSection />
-        <ServicesSection />
-        <ExperienceSection />
-        <BlogSection />
-        <TestimonialsSection />
-        <BookingSection />
-        <ContactSection />
+        <Suspense fallback={null}>
+          <AboutSection />
+          <ServicesSection />
+          <ExperienceSection />
+          <BlogSection />
+          <TestimonialsSection />
+          <BookingSection />
+          <ContactSection />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </>
   );
 };
