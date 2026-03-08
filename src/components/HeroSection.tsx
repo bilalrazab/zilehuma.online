@@ -7,7 +7,9 @@ const PetalCanvas = lazy(() => import("./PetalCanvas"));
 const HeroSection = () => {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-hero overflow-hidden">
-      <PetalCanvas />
+      <Suspense fallback={null}>
+        <PetalCanvas />
+      </Suspense>
 
       {/* Floating decorative orbs */}
       <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-sage/10 blur-3xl animate-float" />
