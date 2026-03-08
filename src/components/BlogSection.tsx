@@ -1,12 +1,23 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { ArrowRight, Clock, Tag } from "lucide-react";
-import { getPosts } from "@/lib/blogStorage";
+import { getPosts, type BlogPost } from "@/lib/blogStorage";
 import { Button } from "@/components/ui/button";
 
 const BlogSection = () => {
   const ref = useScrollReveal();
-  const posts = getPosts().slice(0, 3);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+
+  useEffect(() => {
+    getPosts().then((data) => setPosts(data.slice(0, 3)));
+  }, []);
+
+  if (posts.length === 0) return null;
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
 
   return (
     <section id="blog" className="section-container">
@@ -24,13 +35,13 @@ const BlogSection = () => {
                   <Tag className="w-3 h-3" /> {post.tag}
                 </span>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {post.readTime} min
+                  <Clock className="w-3 h-3" /> {post.read_time} min
                 </span>
               </div>
               <h3 className="font-heading font-semibold text-foreground text-lg mb-2 leading-snug">{post.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-3">{post.excerpt}</p>
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                <span className="text-xs text-muted-foreground">{post.date}</span>
+                <span className="text-xs text-muted-foreground">{formatDate(post.created_at)}</span>
                 <Link
                   to={`/blog/${post.id}`}
                   className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body"

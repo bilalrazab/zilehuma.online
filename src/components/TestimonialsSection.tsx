@@ -29,51 +29,57 @@ const AvatarInitials = ({ name }: { name: string }) => {
   );
 };
 
-const TestimonialCard = ({ testimonial, isActive }: { testimonial: Testimonial; isActive: boolean }) => (
-  <div
-    className={`glass-card !p-8 transition-all duration-500 ${
-      isActive ? "scale-100 opacity-100" : "scale-95 opacity-40 pointer-events-none"
-    }`}
-  >
-    <div className="flex items-start gap-4 mb-5">
-      {testimonial.avatar ? (
-        <img
-          src={testimonial.avatar}
-          alt={testimonial.name}
-          className="w-14 h-14 rounded-full object-cover shrink-0 ring-2 ring-primary/20"
-        />
-      ) : (
-        <AvatarInitials name={testimonial.name} />
-      )}
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-heading font-semibold text-foreground">{testimonial.name}</h4>
-          {testimonial.verified && (
-            <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-          )}
-        </div>
-        <p className="text-sm text-primary font-medium">{testimonial.role}</p>
-        <div className="flex items-center gap-3 mt-1">
-          <StarRating rating={testimonial.rating} />
-          {testimonial.location && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <MapPin className="w-3 h-3" /> {testimonial.location}
-            </span>
-          )}
+const TestimonialCard = ({ testimonial, isActive }: { testimonial: Testimonial; isActive: boolean }) => {
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  };
+
+  return (
+    <div
+      className={`glass-card !p-8 transition-all duration-500 ${
+        isActive ? "scale-100 opacity-100" : "scale-95 opacity-40 pointer-events-none"
+      }`}
+    >
+      <div className="flex items-start gap-4 mb-5">
+        {testimonial.avatar ? (
+          <img
+            src={testimonial.avatar}
+            alt={testimonial.name}
+            className="w-14 h-14 rounded-full object-cover shrink-0 ring-2 ring-primary/20"
+          />
+        ) : (
+          <AvatarInitials name={testimonial.name} />
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="font-heading font-semibold text-foreground">{testimonial.name}</h4>
+            {testimonial.verified && (
+              <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+            )}
+          </div>
+          <p className="text-sm text-primary font-medium">{testimonial.role}</p>
+          <div className="flex items-center gap-3 mt-1">
+            <StarRating rating={testimonial.rating} />
+            {testimonial.location && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> {testimonial.location}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
 
-    <div className="relative">
-      <Quote className="w-8 h-8 text-primary/10 absolute -top-1 -left-1" />
-      <p className="text-muted-foreground leading-relaxed pl-5 italic">
-        "{testimonial.text}"
-      </p>
-    </div>
+      <div className="relative">
+        <Quote className="w-8 h-8 text-primary/10 absolute -top-1 -left-1" />
+        <p className="text-muted-foreground leading-relaxed pl-5 italic">
+          "{testimonial.text}"
+        </p>
+      </div>
 
-    <p className="text-xs text-muted-foreground mt-4 text-right">{testimonial.date}</p>
-  </div>
-);
+      <p className="text-xs text-muted-foreground mt-4 text-right">{formatDate(testimonial.created_at)}</p>
+    </div>
+  );
+};
 
 const TestimonialsSection = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -82,7 +88,7 @@ const TestimonialsSection = () => {
   const ref = useScrollReveal();
 
   useEffect(() => {
-    setTestimonials(getTestimonials());
+    getTestimonials().then(setTestimonials);
   }, []);
 
   const next = useCallback(() => {
