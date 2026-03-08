@@ -10,8 +10,8 @@ const TikTokIcon = (props: any) => (
 const socials = [
   { label: "Instagram", href: "https://www.instagram.com/mindframe_mentality/", icon: Instagram },
   { label: "TikTok", href: "https://www.tiktok.com/@zile_humaa", icon: TikTokIcon },
-  { label: "LinkedIn", href: "https://www.linkedin.com/in/Zilehuma-Suleman", icon: Linkedin },
-  { label: "Facebook", href: "https://facebook.com/", icon: Facebook },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/zile-huma-a85724235?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app", icon: Linkedin },
+  { label: "Facebook", href: "https://www.facebook.com/share/1ZofHY43Gq/", icon: Facebook },
   { label: "X (Twitter)", href: "https://x.com/", icon: Twitter },
   { label: "WhatsApp", href: "https://wa.me/923281022334", icon: MessageCircle },
   { label: "Oladoc", href: "https://oladoc.com/pakistan/islamabad/dr/psychologist/zile-huma-suleman/2856455", icon: ExternalLink },
