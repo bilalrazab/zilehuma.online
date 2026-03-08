@@ -1,5 +1,5 @@
+import { Link } from "react-router-dom";
 import { Instagram, Linkedin, MessageCircle, ExternalLink, Facebook, Twitter } from "lucide-react";
-import { Icon } from "lucide-react";
 
 const TikTokIcon = (props: any) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -17,13 +17,34 @@ const socials = [
   { label: "Oladoc", href: "https://oladoc.com/pakistan/islamabad/dr/psychologist/zile-huma-suleman/2856455", icon: ExternalLink },
 ];
 
+const siteLinks = [
+  { label: "Home", to: "/" },
+  { label: "About", to: "/#about" },
+  { label: "Services", to: "/#services" },
+  { label: "Blog", to: "/blog" },
+  { label: "Booking", to: "/#booking" },
+  { label: "Contact", to: "/#contact" },
+];
+
 const Footer = () => (
-  <footer className="border-t border-border py-8 text-center">
+  <footer className="border-t border-border py-10 text-center">
     <div className="max-w-6xl mx-auto px-4">
       <p className="font-heading text-foreground font-semibold mb-1">Zil-e-Huma Suleman</p>
       <p className="text-sm text-muted-foreground">Clinical Psychologist · Islamabad, Pakistan</p>
 
-      <div className="flex items-center justify-center gap-3 mt-4">
+      <nav aria-label="Footer navigation" className="flex flex-wrap items-center justify-center gap-4 mt-5">
+        {siteLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {link.label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="flex items-center justify-center gap-3 mt-5">
         {socials.map((s) => (
           <a
             key={s.label}
@@ -32,13 +53,14 @@ const Footer = () => (
             rel="noopener noreferrer"
             className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
             title={s.label}
+            aria-label={`Visit ${s.label}`}
           >
             <s.icon className="w-4 h-4" />
           </a>
         ))}
       </div>
 
-      <p className="text-xs text-muted-foreground mt-4">© {new Date().getFullYear()} All rights reserved.</p>
+      <p className="text-xs text-muted-foreground mt-5">© {new Date().getFullYear()} All rights reserved.</p>
     </div>
   </footer>
 );
