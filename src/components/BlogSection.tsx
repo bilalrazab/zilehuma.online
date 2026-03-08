@@ -7,13 +7,18 @@ import { Button } from "@/components/ui/button";
 
 const BlogSection = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const ref = useScrollReveal();
 
   useEffect(() => {
     getPosts().then((data) => setPosts(data.slice(0, 3)));
   }, []);
 
   if (posts.length === 0) return null;
+
+  return <BlogSectionContent posts={posts} />;
+};
+
+const BlogSectionContent = ({ posts }: { posts: BlogPost[] }) => {
+  const ref = useScrollReveal();
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
