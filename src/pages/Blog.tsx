@@ -114,7 +114,7 @@ const Blog = () => {
                 <article key={post.id} className="glass-card flex flex-col group">
                   {post.cover_image && (
                     <div className="rounded-2xl overflow-hidden mb-4 -mx-2 -mt-2">
-                      <img src={post.cover_image} alt={post.title} className="w-full h-44 object-cover" loading="lazy" />
+                      <img src={post.cover_image} alt={post.title} className="w-full aspect-[16/9] object-cover" loading="lazy" />
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-3">

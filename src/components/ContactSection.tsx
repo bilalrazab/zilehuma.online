@@ -16,7 +16,7 @@ const ContactSection = () => {
         <div className="grid sm:grid-cols-2 gap-6">
           <div className="glass-card p-8 flex flex-col gap-6">
             {[
-              { icon: Mail, label: "Email", value: "zilehuma.psy@gmail.com", href: "mailto:zilehuma.psy@gmail.com" },
+              { icon: Mail, label: "Email", value: "zilehumaconsultant@gmail.com", href: "mailto:zilehumaconsultant@gmail.com" },
               { icon: Phone, label: "Phone", value: "+92 328 1022334", href: "tel:+923281022334" },
               { icon: MapPin, label: "Location", value: "Islamabad, Pakistan", href: "#" },
             ].map((c) => (
