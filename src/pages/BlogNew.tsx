@@ -119,7 +119,7 @@ const BlogNew = () => {
               <p className="text-muted-foreground mb-6 italic">{form.excerpt || "No excerpt"}</p>
               {form.cover_image && (
                 <div className="rounded-2xl overflow-hidden mb-6">
-                  <img src={form.cover_image} alt="" className="w-full h-56 object-cover" />
+                  <img src={form.cover_image} alt="" className="w-full aspect-[16/9] object-cover" />
                 </div>
               )}
               {ytId && (
@@ -161,7 +161,7 @@ const BlogNew = () => {
                 <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} className="hidden" />
                 {form.cover_image ? (
                   <div className="relative rounded-2xl overflow-hidden">
-                    <img src={form.cover_image} alt="Cover" className="w-full h-48 object-cover" />
+                    <img src={form.cover_image} alt="Cover" className="w-full aspect-[16/9] object-cover" />
                     <button type="button" onClick={() => update("cover_image", "")} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-destructive hover:bg-background transition-colors">
                       <X className="w-4 h-4" />
                     </button>

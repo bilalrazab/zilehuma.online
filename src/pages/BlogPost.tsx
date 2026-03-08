@@ -195,8 +195,8 @@ const BlogPostPage = () => {
           </header>
 
           {post.cover_image && (
-            <div className="rounded-3xl overflow-hidden mb-8">
-              <img src={post.cover_image} alt={post.title} className="w-full h-64 sm:h-80 object-cover" />
+            <div className="rounded-3xl overflow-hidden mb-8 aspect-[16/9]">
+              <img src={post.cover_image} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
 
