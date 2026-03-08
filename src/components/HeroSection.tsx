@@ -1,6 +1,8 @@
-import PetalCanvas from "./PetalCanvas";
+import { lazy, Suspense } from "react";
 import { Button } from "./ui/button";
 import { CalendarDays, Sparkles } from "lucide-react";
+
+const PetalCanvas = lazy(() => import("./PetalCanvas"));
 
 const HeroSection = () => {
   return (
