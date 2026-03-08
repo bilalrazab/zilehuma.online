@@ -1,8 +1,8 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getPost, toggleLike, deletePost } from "@/lib/blogStorage";
+import { getPost, toggleLike, deletePost, type BlogPost } from "@/lib/blogStorage";
 import { ArrowLeft, Heart, Clock, Tag, Trash2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PasswordDialog from "@/components/PasswordDialog";
@@ -15,8 +15,29 @@ const extractYouTubeId = (url: string): string | null => {
 const BlogPostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [post, setPost] = useState(() => getPost(id || ""));
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showDeletePassword, setShowDeletePassword] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await getPost(id || "");
+      setPost(data ?? null);
+      setLoading(false);
+    };
+    load();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen pt-24 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </main>
+      </>
+    );
+  }
 
   if (!post) {
     return (
@@ -34,18 +55,22 @@ const BlogPostPage = () => {
     );
   }
 
-  const handleLike = () => {
-    toggleLike(post.id);
-    setPost(getPost(post.id));
+  const handleLike = async () => {
+    const updated = await toggleLike(post.id);
+    if (updated) setPost(updated);
   };
 
-  const handleDeleteConfirm = () => {
-    deletePost(post.id);
+  const handleDeleteConfirm = async () => {
+    await deletePost(post.id);
     setShowDeletePassword(false);
     navigate("/blog");
   };
 
-  const ytId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null;
+  const ytId = post.youtube_url ? extractYouTubeId(post.youtube_url) : null;
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
 
   const renderContent = (content: string) => {
     return content.split("\n").map((line, i) => {
@@ -100,15 +125,15 @@ const BlogPostPage = () => {
             <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground leading-tight mb-4">{post.title}</h1>
             <p className="text-lg text-muted-foreground mb-4">{post.excerpt}</p>
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {post.date}</span>
-              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {post.readTime} min read</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {formatDate(post.created_at)}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {post.read_time} min read</span>
               <span className="font-body">By {post.author}</span>
             </div>
           </header>
 
-          {post.coverImage && (
+          {post.cover_image && (
             <div className="rounded-3xl overflow-hidden mb-8">
-              <img src={post.coverImage} alt={post.title} className="w-full h-64 sm:h-80 object-cover" />
+              <img src={post.cover_image} alt={post.title} className="w-full h-64 sm:h-80 object-cover" />
             </div>
           )}
 
@@ -131,13 +156,9 @@ const BlogPostPage = () => {
           <div className="flex items-center justify-between">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${
-                post.likedByUser
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              }`}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             >
-              <Heart className={`w-4 h-4 ${post.likedByUser ? "fill-current" : ""}`} />
+              <Heart className="w-4 h-4" />
               {post.likes} {post.likes === 1 ? "like" : "likes"}
             </button>
             <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">

@@ -28,9 +28,9 @@ const BlogNew = () => {
     excerpt: "",
     content: "",
     tag: TAGS[0],
-    coverImage: "",
+    cover_image: "",
     author: "Zil-e-Huma",
-    youtubeUrl: "",
+    youtube_url: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -40,7 +40,7 @@ const BlogNew = () => {
     if (!form.excerpt.trim()) e.excerpt = "Excerpt is required";
     if (!form.content.trim()) e.content = "Content is required";
     if (form.content.trim().length < 50) e.content = "Content must be at least 50 characters";
-    if (form.youtubeUrl && !extractYouTubeId(form.youtubeUrl)) e.youtubeUrl = "Invalid YouTube URL";
+    if (form.youtube_url && !extractYouTubeId(form.youtube_url)) e.youtube_url = "Invalid YouTube URL";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -51,9 +51,9 @@ const BlogNew = () => {
     setShowPassword(true);
   };
 
-  const handlePasswordSuccess = () => {
+  const handlePasswordSuccess = async () => {
     setShowPassword(false);
-    savePost(form);
+    await savePost(form);
     toast.success("Post published!");
     navigate("/blog");
   };
@@ -72,7 +72,7 @@ const BlogNew = () => {
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      update("coverImage", reader.result as string);
+      update("cover_image", reader.result as string);
       toast.success("Image uploaded!");
     };
     reader.readAsDataURL(file);
@@ -88,7 +88,7 @@ const BlogNew = () => {
     });
   };
 
-  const ytId = form.youtubeUrl ? extractYouTubeId(form.youtubeUrl) : null;
+  const ytId = form.youtube_url ? extractYouTubeId(form.youtube_url) : null;
 
   return (
     <>
@@ -117,20 +117,14 @@ const BlogNew = () => {
               <span className="text-xs font-body text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block">{form.tag}</span>
               <h1 className="font-heading text-3xl font-bold text-foreground mb-3">{form.title || "Untitled"}</h1>
               <p className="text-muted-foreground mb-6 italic">{form.excerpt || "No excerpt"}</p>
-              {form.coverImage && (
+              {form.cover_image && (
                 <div className="rounded-2xl overflow-hidden mb-6">
-                  <img src={form.coverImage} alt="" className="w-full h-56 object-cover" />
+                  <img src={form.cover_image} alt="" className="w-full h-56 object-cover" />
                 </div>
               )}
               {ytId && (
                 <div className="rounded-2xl overflow-hidden mb-6 aspect-video">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${ytId}`}
-                    title="YouTube video"
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                  <iframe src={`https://www.youtube.com/embed/${ytId}`} title="YouTube video" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                 </div>
               )}
               <div>{renderPreview(form.content || "No content yet...")}</div>
@@ -162,14 +156,13 @@ const BlogNew = () => {
                 </div>
               </div>
 
-              {/* Cover Image Upload */}
               <div className="space-y-2">
                 <Label>Cover Image</Label>
                 <input type="file" ref={fileInputRef} accept="image/*" onChange={handleImageUpload} className="hidden" />
-                {form.coverImage ? (
+                {form.cover_image ? (
                   <div className="relative rounded-2xl overflow-hidden">
-                    <img src={form.coverImage} alt="Cover" className="w-full h-48 object-cover" />
-                    <button type="button" onClick={() => update("coverImage", "")} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-destructive hover:bg-background transition-colors">
+                    <img src={form.cover_image} alt="Cover" className="w-full h-48 object-cover" />
+                    <button type="button" onClick={() => update("cover_image", "")} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-destructive hover:bg-background transition-colors">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -182,13 +175,12 @@ const BlogNew = () => {
                 )}
               </div>
 
-              {/* YouTube Embed */}
               <div className="space-y-2">
-                <Label htmlFor="youtubeUrl" className="flex items-center gap-2">
+                <Label htmlFor="youtube_url" className="flex items-center gap-2">
                   <Youtube className="w-4 h-4 text-destructive" /> YouTube Video (optional)
                 </Label>
-                <Input id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." value={form.youtubeUrl} onChange={(e) => update("youtubeUrl", e.target.value)} className={errors.youtubeUrl ? "border-destructive" : ""} />
-                {errors.youtubeUrl && <p className="text-xs text-destructive">{errors.youtubeUrl}</p>}
+                <Input id="youtube_url" placeholder="https://www.youtube.com/watch?v=..." value={form.youtube_url} onChange={(e) => update("youtube_url", e.target.value)} className={errors.youtube_url ? "border-destructive" : ""} />
+                {errors.youtube_url && <p className="text-xs text-destructive">{errors.youtube_url}</p>}
                 {ytId && (
                   <div className="rounded-2xl overflow-hidden aspect-video mt-2">
                     <iframe src={`https://www.youtube.com/embed/${ytId}`} title="YouTube preview" className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />

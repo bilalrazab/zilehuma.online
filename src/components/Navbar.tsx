@@ -25,12 +25,22 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleNavClick = (l: typeof navLinks[0]) => {
+  const handleNavClick = (e: React.MouseEvent, l: typeof navLinks[0]) => {
+    e.preventDefault();
     setOpen(false);
+
     if ((l as any).isRoute) {
       navigate(l.href);
-    } else if (location.pathname !== "/") {
+      return;
+    }
+
+    // If we're not on the home page, navigate to home with the hash
+    if (location.pathname !== "/") {
       navigate("/" + l.href);
+    } else {
+      // Scroll to the section on the current page
+      const el = document.querySelector(l.href);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -50,8 +60,8 @@ const Navbar = () => {
           {navLinks.map((l) => (
             <a
               key={l.href}
-              href={l.href}
-              onClick={(e) => { if ((l as any).isRoute) { e.preventDefault(); handleNavClick(l); } }}
+              href={(l as any).isRoute ? l.href : "/" + l.href}
+              onClick={(e) => handleNavClick(e, l)}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {l.label}
@@ -75,8 +85,8 @@ const Navbar = () => {
           {navLinks.map((l) => (
             <a
               key={l.href}
-              href={l.href}
-              onClick={(e) => { if ((l as any).isRoute) { e.preventDefault(); } handleNavClick(l); }}
+              href={(l as any).isRoute ? l.href : "/" + l.href}
+              onClick={(e) => handleNavClick(e, l)}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
             >
               {l.label}

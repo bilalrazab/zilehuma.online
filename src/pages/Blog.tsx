@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPosts, toggleLike, deletePost, verifyPassword, BlogPost } from "@/lib/blogStorage";
+import { getPosts, toggleLike, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
 import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,21 @@ import PasswordDialog from "@/components/PasswordDialog";
 const TAGS = ["All", "Mental Health", "Therapy", "Hypnotherapy", "Self-Care", "Relationships", "Wellness"];
 
 const Blog = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(getPosts);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState("All");
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const perPage = 6;
+
+  const loadPosts = async () => {
+    const data = await getPosts();
+    setPosts(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadPosts(); }, []);
 
   const filtered = useMemo(() => {
     return posts.filter((p) => {
@@ -32,21 +41,25 @@ const Blog = () => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const handleLike = (id: string) => {
-    toggleLike(id);
-    setPosts(getPosts());
+  const handleLike = async (id: string) => {
+    await toggleLike(id);
+    await loadPosts();
   };
 
   const handleDeleteClick = (id: string) => {
     setDeleteTarget(id);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (deleteTarget) {
-      deletePost(deleteTarget);
-      setPosts(getPosts());
+      await deletePost(deleteTarget);
+      await loadPosts();
       setDeleteTarget(null);
     }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
   return (
@@ -89,7 +102,9 @@ const Blog = () => {
             </div>
           </div>
 
-          {paged.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-20 text-muted-foreground">Loading...</div>
+          ) : paged.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground">
               <p className="text-lg">No posts found.</p>
             </div>
@@ -97,9 +112,9 @@ const Blog = () => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {paged.map((post) => (
                 <article key={post.id} className="glass-card flex flex-col group">
-                  {post.coverImage && (
+                  {post.cover_image && (
                     <div className="rounded-2xl overflow-hidden mb-4 -mx-2 -mt-2">
-                      <img src={post.coverImage} alt={post.title} className="w-full h-44 object-cover" loading="lazy" />
+                      <img src={post.cover_image} alt={post.title} className="w-full h-44 object-cover" loading="lazy" />
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-3">
@@ -107,16 +122,16 @@ const Blog = () => {
                       <Tag className="w-3 h-3" /> {post.tag}
                     </span>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {post.readTime} min
+                      <Clock className="w-3 h-3" /> {post.read_time} min
                     </span>
                   </div>
                   <h2 className="font-heading font-semibold text-foreground text-lg mb-2 leading-snug">{post.title}</h2>
                   <p className="text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-3">{post.excerpt}</p>
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground">{post.date}</span>
-                      <button onClick={() => handleLike(post.id)} className={`flex items-center gap-1 text-xs transition-colors ${post.likedByUser ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}>
-                        <Heart className={`w-3.5 h-3.5 ${post.likedByUser ? "fill-current" : ""}`} />
+                      <span className="text-xs text-muted-foreground">{formatDate(post.created_at)}</span>
+                      <button onClick={() => handleLike(post.id)} className="flex items-center gap-1 text-xs transition-colors text-muted-foreground hover:text-destructive">
+                        <Heart className="w-3.5 h-3.5" />
                         {post.likes}
                       </button>
                       <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
