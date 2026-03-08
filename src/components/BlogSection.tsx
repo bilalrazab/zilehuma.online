@@ -6,7 +6,6 @@ import { getPosts, type BlogPost } from "@/lib/blogStorage";
 import { Button } from "@/components/ui/button";
 
 const BlogSection = () => {
-  const ref = useScrollReveal();
   const [posts, setPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
@@ -14,6 +13,12 @@ const BlogSection = () => {
   }, []);
 
   if (posts.length === 0) return null;
+
+  return <BlogSectionContent posts={posts} />;
+};
+
+const BlogSectionContent = ({ posts }: { posts: BlogPost[] }) => {
+  const ref = useScrollReveal();
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
