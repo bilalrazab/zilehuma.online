@@ -22,6 +22,7 @@ const siteLinks = [
   { label: "About", href: "#about" },
   { label: "Services", href: "#services" },
   { label: "Blog", href: "/blog", isRoute: true },
+  { label: "FAQ", href: "#faq" },
   { label: "Booking", href: "#booking" },
   { label: "Contact", href: "#contact" },
 ];
