@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /testimonial/new
 
-Sitemap: https://zilehuma.com/sitemap.xml
+Sitemap: https://zilehuma.online/sitemap.xml
