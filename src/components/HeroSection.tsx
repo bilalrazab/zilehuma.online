@@ -25,8 +25,8 @@ const HeroSection = () => {
             Clinical Psychologist · Islamabad
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold mb-4 text-foreground leading-tight">
-            Zil-e-Huma<br />
-            <span className="text-gradient">Suleman</span>
+            Clinical Psychologist Islamabad:<br />
+            <span className="text-gradient">Your Path to Mental Wellness</span>
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg mb-8 max-w-md mx-auto font-body leading-relaxed">
             Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.
