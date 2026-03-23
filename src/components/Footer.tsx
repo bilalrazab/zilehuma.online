@@ -31,10 +31,17 @@ const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const scrollToHash = (hash: string) => {
+    const id = hash.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleClick = (e: React.MouseEvent, link: typeof siteLinks[0]) => {
     e.preventDefault();
-    if (link.isRoute) {
+    if ((link as any).isRoute) {
       navigate(link.href);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     if (link.href === "/") {
@@ -43,12 +50,10 @@ const Footer = () => {
       return;
     }
     if (location.pathname !== "/") {
-      navigate("/" + link.href);
-      setTimeout(() => {
-        document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
-      }, 300);
+      navigate("/");
+      setTimeout(() => scrollToHash(link.href), 400);
     } else {
-      document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
+      scrollToHash(link.href);
     }
   };
 
