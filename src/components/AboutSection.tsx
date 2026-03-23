@@ -1,7 +1,8 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Heart, Shield, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
-import therapyRoomAsset from "@/assets/therapy-room.jpg.asset.json";
+
+const THERAPY_ROOM_IMAGE_URL = "/__l5e/assets-v1/29c5d49c-cb70-4f54-bdfa-01ff0be9ea03/therapy-room.jpg";
 
 const AboutSection = () => {
   const ref = useScrollReveal();
@@ -16,7 +17,7 @@ const AboutSection = () => {
 
         <div className="glass-card p-8 sm:p-10">
           <img
-            src={therapyRoomAsset.url}
+            src={THERAPY_ROOM_IMAGE_URL}
             alt="Calming therapy room for clinical psychology sessions in Islamabad"
             width={1280}
             height={720}
