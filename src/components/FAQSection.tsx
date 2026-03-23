@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: "What are Zil-e-Huma Suleman's qualifications and experience?",
-    a: "She holds an MS in Clinical Psychology from SZABIST (2024–2026) and has gained hands-on clinical experience in hospitals, rehabilitation centers, and therapeutic settings.",
+    a: "She holds an MS in Clinical Psychology and has gained hands-on clinical experience in hospitals, rehabilitation centers, and therapeutic settings.",
   },
   {
     q: "Are therapy sessions confidential?",

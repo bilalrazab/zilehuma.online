@@ -14,8 +14,8 @@ const AboutSection = () => {
 
         <div className="glass-card p-8 sm:p-10">
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 font-body">
-            I'm Zil-e-Huma Suleman, a Clinical Psychologist based in Islamabad, Pakistan. I completed my
-            MS in Clinical Psychology from SZABIST (2024–2026) and have gained hands-on experience across
+            I'm Zil-e-Huma Suleman, a Clinical Psychologist based in Islamabad, Pakistan. I hold an
+            MS in Clinical Psychology and have gained hands-on experience across
             hospital, rehabilitation, and therapeutic settings.
           </p>
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-8 font-body">
