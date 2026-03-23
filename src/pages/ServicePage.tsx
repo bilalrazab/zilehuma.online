@@ -3,19 +3,20 @@ import { ArrowLeft, CalendarDays, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { lazy, Suspense } from "react";
-import therapyRoomAsset from "@/assets/therapy-room.jpg.asset.json";
-import onlineCounselingAsset from "@/assets/online-counseling.jpg.asset.json";
-import mentalWellnessAsset from "@/assets/mental-wellness.jpg.asset.json";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
+const THERAPY_ROOM_IMAGE_URL = "/__l5e/assets-v1/29c5d49c-cb70-4f54-bdfa-01ff0be9ea03/therapy-room.jpg";
+const ONLINE_COUNSELING_IMAGE_URL = "/__l5e/assets-v1/836db2f0-4b91-4016-a086-601f6fc00549/online-counseling.jpg";
+const MENTAL_WELLNESS_IMAGE_URL = "/__l5e/assets-v1/6c4a0bc6-8ad4-419e-b244-be1cfe13163d/mental-wellness.jpg";
+
 const serviceImages: Record<string, { url: string; alt: string }> = {
-  "individual-therapy": { url: therapyRoomAsset.url, alt: "Individual therapy session room for personalized mental health treatment in Islamabad" },
-  "anxiety-stress-management": { url: mentalWellnessAsset.url, alt: "Anxiety and stress management techniques with a Clinical Psychologist in Islamabad" },
-  "hypnotherapy-sessions": { url: mentalWellnessAsset.url, alt: "Hypnotherapy session for deep relaxation and behavioral change" },
-  "behavioral-therapy": { url: therapyRoomAsset.url, alt: "Cognitive Behavioral Therapy CBT sessions in Islamabad Pakistan" },
-  "psychological-assessments": { url: mentalWellnessAsset.url, alt: "Comprehensive psychological assessment and diagnostic evaluation" },
-  "online-counseling": { url: onlineCounselingAsset.url, alt: "Online counseling and teletherapy video session from home in Pakistan" },
+  "individual-therapy": { url: THERAPY_ROOM_IMAGE_URL, alt: "Individual therapy session room for personalized mental health treatment in Islamabad" },
+  "anxiety-stress-management": { url: MENTAL_WELLNESS_IMAGE_URL, alt: "Anxiety and stress management techniques with a Clinical Psychologist in Islamabad" },
+  "hypnotherapy-sessions": { url: MENTAL_WELLNESS_IMAGE_URL, alt: "Hypnotherapy session for deep relaxation and behavioral change" },
+  "behavioral-therapy": { url: THERAPY_ROOM_IMAGE_URL, alt: "Cognitive Behavioral Therapy CBT sessions in Islamabad Pakistan" },
+  "psychological-assessments": { url: MENTAL_WELLNESS_IMAGE_URL, alt: "Comprehensive psychological assessment and diagnostic evaluation" },
+  "online-counseling": { url: ONLINE_COUNSELING_IMAGE_URL, alt: "Online counseling and teletherapy video session from home in Pakistan" },
 };
 
 const serviceData: Record<string, {
