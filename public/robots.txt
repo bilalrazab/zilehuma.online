@@ -1,5 +1,18 @@
 User-agent: *
 Allow: /
 Disallow: /testimonial/new
+Disallow: /blog/new
 
 Sitemap: https://zilehuma.online/sitemap.xml
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
