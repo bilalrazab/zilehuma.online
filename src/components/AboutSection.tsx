@@ -9,7 +9,7 @@ const AboutSection = () => {
       <div ref={ref} className="opacity-0 max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="section-title">About Me</h2>
-          <p className="section-subtitle mx-auto">Understanding you, one conversation at a time.</p>
+          <p className="section-subtitle mx-auto">Compassionate care rooted in evidence-based practice.</p>
         </div>
 
         <div className="glass-card p-8 sm:p-10">
