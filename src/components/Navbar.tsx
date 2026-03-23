@@ -25,27 +25,35 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const scrollToHash = (hash: string) => {
+    const id = hash.replace("#", "");
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleNavClick = (e: React.MouseEvent, l: typeof navLinks[0]) => {
     e.preventDefault();
     setOpen(false);
 
     if ((l as any).isRoute) {
       navigate(l.href);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    // If we're not on the home page, navigate to home with the hash
+    if (l.href === "#home") {
+      if (location.pathname !== "/") {
+        navigate("/");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     if (location.pathname !== "/") {
-      navigate("/" + l.href);
-      // Wait for navigation then scroll
-      setTimeout(() => {
-        const el = document.querySelector(l.href);
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      }, 300);
+      navigate("/");
+      setTimeout(() => scrollToHash(l.href), 400);
     } else {
-      // Scroll to the section on the current page
-      const el = document.querySelector(l.href);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      scrollToHash(l.href);
     }
   };
 
