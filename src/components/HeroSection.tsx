@@ -27,14 +27,23 @@ const HeroSection = () => {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-hero overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Hero background image */}
+      <img
+        src="/images/hero-bg.jpg"
+        alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
+        width={1920}
+        height={1080}
+        fetchPriority="high"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-foreground/40 dark:bg-foreground/60" />
+
       <Suspense fallback={null}>
         <PetalCanvas />
       </Suspense>
-
-      {/* Floating decorative orbs */}
-      <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-sage/10 blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-lavender/10 blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
       <div className="relative z-10 text-center px-4 max-w-2xl" style={{ perspective: "1000px" }}>
         <div
