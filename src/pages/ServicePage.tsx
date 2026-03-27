@@ -6,9 +6,9 @@ import { lazy, Suspense } from "react";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
-const THERAPY_ROOM_IMAGE_URL = "/__l5e/assets-v1/29c5d49c-cb70-4f54-bdfa-01ff0be9ea03/therapy-room.jpg";
-const ONLINE_COUNSELING_IMAGE_URL = "/__l5e/assets-v1/836db2f0-4b91-4016-a086-601f6fc00549/online-counseling.jpg";
-const MENTAL_WELLNESS_IMAGE_URL = "/__l5e/assets-v1/6c4a0bc6-8ad4-419e-b244-be1cfe13163d/mental-wellness.jpg";
+const THERAPY_ROOM_IMAGE_URL = "/images/about-therapy-room.jpg";
+const ONLINE_COUNSELING_IMAGE_URL = "/images/online-counseling-session.jpg";
+const MENTAL_WELLNESS_IMAGE_URL = "/images/services-mental-wellness.jpg";
 
 const serviceImages: Record<string, { url: string; alt: string }> = {
   "individual-therapy": { url: THERAPY_ROOM_IMAGE_URL, alt: "Individual therapy session room for personalized mental health treatment in Islamabad" },

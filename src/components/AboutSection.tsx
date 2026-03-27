@@ -2,7 +2,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Heart, Shield, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const THERAPY_ROOM_IMAGE_URL = "/__l5e/assets-v1/29c5d49c-cb70-4f54-bdfa-01ff0be9ea03/therapy-room.jpg";
+const THERAPY_ROOM_IMAGE_URL = "/images/about-therapy-room.jpg";
 
 const AboutSection = () => {
   const ref = useScrollReveal();
