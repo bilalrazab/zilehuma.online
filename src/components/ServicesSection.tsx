@@ -2,7 +2,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Brain, HeartPulse, Sparkles, Activity, ClipboardCheck, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const MENTAL_WELLNESS_IMAGE_URL = "/__l5e/assets-v1/6c4a0bc6-8ad4-419e-b244-be1cfe13163d/mental-wellness.jpg";
+const MENTAL_WELLNESS_IMAGE_URL = "/images/services-mental-wellness.jpg";
 
 const services = [
   { icon: Brain, title: "Individual Therapy", slug: "individual-therapy", desc: "One-on-one sessions for anxiety, depression, trauma, and personal growth — tailored to your unique needs and healing journey." },
