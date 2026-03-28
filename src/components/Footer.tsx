@@ -61,7 +61,7 @@ const Footer = () => {
   <footer className="border-t border-border py-10 text-center">
     <div className="max-w-6xl mx-auto px-4">
       <p className="font-heading text-foreground font-semibold mb-1">Zil-e-Huma Suleman</p>
-      <p className="text-sm text-muted-foreground">Clinical Psychologist · Islamabad, Pakistan</p>
+      <p className="text-sm text-muted-foreground">Clinical Psychologist · The Plazzo, Gulberg Greens, Islamabad</p>
 
       <nav aria-label="Footer navigation" className="flex flex-wrap items-center justify-center gap-4 mt-5">
         {siteLinks.map((link) => (
