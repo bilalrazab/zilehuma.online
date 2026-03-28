@@ -27,7 +27,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen pt-24 sm:pt-28 lg:pt-32 flex items-center justify-center overflow-hidden">
       {/* Hero background image */}
       <img
         src="/images/hero-bg.jpg"
@@ -39,24 +39,24 @@ const HeroSection = () => {
         className="absolute inset-0 w-full h-full object-cover"
       />
       {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-foreground/40 dark:bg-foreground/60" />
+      <div className="absolute inset-0 bg-foreground/50 dark:bg-foreground/65" />
 
       <Suspense fallback={null}>
         <PetalCanvas />
       </Suspense>
 
-      <div className="relative z-10 text-center px-4 max-w-3xl">
-        <p className="text-sm tracking-widest uppercase text-white/80 mb-3 font-body drop-shadow-md">
+      <div className="relative z-10 text-center px-4 max-w-4xl">
+        <p className="text-sm sm:text-base tracking-[0.2em] uppercase text-white/80 mb-4 font-body drop-shadow-md">
           Zil-e-Huma Suleman
         </p>
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold mb-4 text-white leading-tight drop-shadow-lg">
-          Clinical Psychologist Islamabad:<br />
-          <span className="text-gradient">Your Path to Mental Wellness</span>
+        <h1 className="font-heading font-bold mb-5 text-white leading-tight drop-shadow-lg">
+          <span className="block text-2xl sm:text-3xl lg:text-4xl mb-2">Clinical Psychologist Islamabad</span>
+          <span className="block text-3xl sm:text-4xl lg:text-5xl text-gradient whitespace-nowrap">Your Path to Mental Wellness</span>
         </h1>
-        <p className="text-white/90 text-base sm:text-lg mb-8 max-w-md mx-auto font-body leading-relaxed drop-shadow-md">
+        <p className="text-white/90 text-base sm:text-lg mb-10 max-w-lg mx-auto font-body leading-relaxed drop-shadow-md">
           Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" onClick={(e) => handleCTA(e, "booking")}>
             <CalendarDays className="w-4 h-4" />
             Book Online Session

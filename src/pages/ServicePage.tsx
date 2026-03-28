@@ -2,7 +2,7 @@ import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarDays, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -250,6 +250,10 @@ const serviceData: Record<string, {
 const ServicePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [slug]);
   const service = slug ? serviceData[slug] : undefined;
   const image = slug ? serviceImages[slug] : undefined;
 
