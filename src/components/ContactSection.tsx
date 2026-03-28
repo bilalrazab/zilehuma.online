@@ -18,7 +18,7 @@ const ContactSection = () => {
             {[
               { icon: Mail, label: "Email", value: "zilehumaconsultant@gmail.com", href: "mailto:zilehumaconsultant@gmail.com" },
               { icon: Phone, label: "Phone", value: "+92 328 1022334", href: "tel:+923281022334" },
-              { icon: MapPin, label: "Location", value: "Islamabad, Pakistan", href: "#" },
+              { icon: MapPin, label: "Location", value: "The Plazzo, Gulberg Greens, Islamabad", href: "https://maps.app.goo.gl/eWJniqQqGSQQ16im9" },
             ].map((c) => (
               <a key={c.label} href={c.href} className="flex items-start gap-4 group">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
