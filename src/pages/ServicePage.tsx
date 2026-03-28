@@ -2,7 +2,7 @@ import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarDays, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
