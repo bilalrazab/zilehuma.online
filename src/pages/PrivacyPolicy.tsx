@@ -590,7 +590,7 @@ const PrivacyPolicy = () => {
                   {[
                     { icon: Mail, label: "Email", value: "zilehumaconsultant@gmail.com", href: "mailto:zilehumaconsultant@gmail.com" },
                     { icon: Phone, label: "Phone / WhatsApp", value: "+92 328 1022334", href: "tel:+923281022334" },
-                    { icon: MapPin, label: "Location", value: "Islamabad, Pakistan" },
+                    { icon: MapPin, label: "Location", value: "The Plazzo, Gulberg Greens, Islamabad", href: "https://maps.app.goo.gl/eWJniqQqGSQQ16im9" },
                     { icon: Globe, label: "Website", value: "zilehuma.online", href: "https://zilehuma.online" },
                   ].map((item) => (
                     <div key={item.label} className="flex items-start gap-3">

@@ -18,7 +18,7 @@ const ContactSection = () => {
             {[
               { icon: Mail, label: "Email", value: "zilehumaconsultant@gmail.com", href: "mailto:zilehumaconsultant@gmail.com" },
               { icon: Phone, label: "Phone", value: "+92 328 1022334", href: "tel:+923281022334" },
-              { icon: MapPin, label: "Location", value: "Islamabad, Pakistan", href: "#" },
+              { icon: MapPin, label: "Location", value: "The Plazzo, Gulberg Greens, Islamabad", href: "https://maps.app.goo.gl/eWJniqQqGSQQ16im9" },
             ].map((c) => (
               <a key={c.label} href={c.href} className="flex items-start gap-4 group">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
@@ -48,7 +48,7 @@ const ContactSection = () => {
           <div className="glass-card p-2 overflow-hidden">
             <iframe
               title="Location Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d212645.48222442044!2d72.92988904999999!3d33.6162595!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38dfbfd07891722f%3A0x6059515c3b55e7e8!2sIslamabad%2C%20Islamabad%20Capital%20Territory%2C%20Pakistan!5e0!3m2!1sen!2s!4v1700000000000"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3321.123!2d73.1234!3d33.6789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThe+Plazzo%2C+Gulberg+Greens%2C+Islamabad!5e0!3m2!1sen!2spk!4v1700000000000"
               className="w-full h-full min-h-[280px] rounded-2xl"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
