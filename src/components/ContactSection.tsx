@@ -48,7 +48,7 @@ const ContactSection = () => {
           <div className="glass-card p-2 overflow-hidden">
             <iframe
               title="Location Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3321.123!2d73.1234!3d33.6789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sThe+Plazzo%2C+Gulberg+Greens%2C+Islamabad!5e0!3m2!1sen!2spk!4v1700000000000"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13283.5!2d73.0800!3d33.6350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df95908d675de1%3A0x7f4e6cd1b3b2e4a2!2sGulberg+Greens%2C+Islamabad!5e0!3m2!1sen!2spk!4v1700000000000"
               className="w-full h-full min-h-[280px] rounded-2xl"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
