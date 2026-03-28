@@ -27,8 +27,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section id="home" className="relative min-h-screen pt-24 sm:pt-28 lg:pt-32 flex items-center justify-center overflow-hidden">
-      {/* Hero background image */}
+    <section id="home" className="relative min-h-[100svh] pt-28 sm:pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
       <img
         src="/images/hero-bg.jpg"
         alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
@@ -38,30 +37,29 @@ const HeroSection = () => {
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover"
       />
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-foreground/50 dark:bg-foreground/65" />
+      <div className="absolute inset-0 bg-black/55 dark:bg-black/65" />
 
       <Suspense fallback={null}>
         <PetalCanvas />
       </Suspense>
 
-      <div className="relative z-10 text-center px-4 max-w-4xl">
-        <p className="text-sm sm:text-base tracking-[0.2em] uppercase text-white/80 mb-4 font-body drop-shadow-md">
+      <div className="relative z-10 text-center px-6 sm:px-8 w-full max-w-2xl lg:max-w-4xl mx-auto">
+        <p className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/80 mb-3 font-body drop-shadow-md">
           Zil-e-Huma Suleman
         </p>
-        <h1 className="font-heading font-bold mb-5 text-white leading-tight drop-shadow-lg">
-          <span className="block text-2xl sm:text-3xl lg:text-4xl mb-2">Clinical Psychologist Islamabad</span>
-          <span className="block text-3xl sm:text-4xl lg:text-5xl text-gradient whitespace-nowrap">Your Path to Mental Wellness</span>
+        <h1 className="font-heading font-bold mb-4 text-white leading-tight drop-shadow-lg">
+          <span className="block text-xl sm:text-2xl lg:text-4xl mb-1">Clinical Psychologist Islamabad</span>
+          <span className="block text-2xl sm:text-3xl lg:text-5xl text-gradient">Your Path to Mental Wellness</span>
         </h1>
-        <p className="text-white/90 text-base sm:text-lg mb-10 max-w-lg mx-auto font-body leading-relaxed drop-shadow-md">
+        <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-8 max-w-md mx-auto font-body leading-relaxed drop-shadow-md">
           Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" onClick={(e) => handleCTA(e, "booking")}>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
+          <Button size="lg" className="w-full sm:w-auto" onClick={(e) => handleCTA(e, "booking")}>
             <CalendarDays className="w-4 h-4" />
             Book Online Session
           </Button>
-          <Button variant="glass" size="lg" className="text-white border-white/30" onClick={(e) => handleCTA(e, "services")}>
+          <Button variant="glass" size="lg" className="w-full sm:w-auto text-white border-white/30" onClick={(e) => handleCTA(e, "services")}>
             <Sparkles className="w-4 h-4" />
             View Services
           </Button>
