@@ -170,13 +170,30 @@ const ClientFilePage = () => {
       duration_minutes: sessionForm.duration_minutes, type: sessionForm.type, title: sessionForm.title,
       meeting_link: sessionForm.meeting_link || null, notes: sessionForm.notes || null
     });
-    // Notify client
+    // Notify client + send email
     if (client?.user_id) {
       await db.from('notifications').insert({
         user_id: client.user_id, title: 'Session Scheduled',
         message: `Your session is scheduled for ${format(start, 'MMM d, h:mm a')}`,
         type: 'info', link: '/dashboard/sessions',
       });
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'session-confirmation',
+            recipientEmail: client.email,
+            idempotencyKey: `session-confirm-${Date.now()}`,
+            templateData: {
+              clientName: client.full_name?.split(' ')[0],
+              sessionDate: format(start, 'MMMM d, yyyy'),
+              sessionTime: format(start, 'h:mm a'),
+              sessionType: sessionForm.type,
+              duration: `${sessionForm.duration_minutes} minutes`,
+            },
+          },
+        });
+      } catch (err) { console.error('Email send error:', err); }
     }
     setSessionOpen(false); setSessionForm({ start_time: '', duration_minutes: 50, type: 'in-person', title: 'Session', meeting_link: '', notes: '' });
     toast({ title: "Session scheduled" }); load();
