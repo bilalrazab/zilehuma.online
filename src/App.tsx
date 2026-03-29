@@ -18,16 +18,14 @@ import ResetPassword from "./pages/ResetPassword";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ClientsPage from "./pages/dashboard/ClientsPage";
-import ClientProfilePage from "./pages/dashboard/ClientProfilePage";
-import AppointmentsPage from "./pages/dashboard/AppointmentsPage";
-import SessionNotesPage from "./pages/dashboard/SessionNotesPage";
+import ClientFilePage from "./pages/dashboard/ClientFilePage";
+import TasksPage from "./pages/dashboard/TasksPage";
+import CalendarPage from "./pages/dashboard/CalendarPage";
+import ClientSessionsPage from "./pages/dashboard/ClientSessionsPage";
+import ClientProgressPage from "./pages/dashboard/ClientProgressPage";
 import MessagingPage from "./pages/dashboard/MessagingPage";
 import ResourcesPage from "./pages/dashboard/ResourcesPage";
-import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
-import AuditLogPage from "./pages/dashboard/AuditLogPage";
-import MoodTrackerPage from "./pages/dashboard/MoodTrackerPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
-import TreatmentPlansPage from "./pages/dashboard/TreatmentPlansPage";
 
 const queryClient = new QueryClient();
 
@@ -52,18 +50,15 @@ const App = () => (
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="clients" element={<ClientsPage />} />
-              <Route path="clients/:id" element={<ClientProfilePage />} />
-              <Route path="appointments" element={<AppointmentsPage />} />
-              <Route path="sessions" element={<SessionNotesPage />} />
+              <Route path="clients/:id" element={<ClientFilePage />} />
+              <Route path="tasks" element={<TasksPage />} />
+              <Route path="calendar" element={<CalendarPage />} />
+              <Route path="sessions" element={<ClientSessionsPage />} />
+              <Route path="progress" element={<ClientProgressPage />} />
               <Route path="messages" element={<MessagingPage />} />
               <Route path="resources" element={<ResourcesPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="audit-log" element={<AuditLogPage />} />
-              <Route path="mood" element={<MoodTrackerPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="treatment-plans" element={<TreatmentPlansPage />} />
             </Route>
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

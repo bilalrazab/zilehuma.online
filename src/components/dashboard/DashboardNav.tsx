@@ -1,33 +1,28 @@
-import { Bell, Search, LogOut, User, Settings, ExternalLink } from "lucide-react";
+import { Bell, LogOut, Settings, ExternalLink } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 const db = supabase as any;
 
 const routeTitles: Record<string, string> = {
-  '/dashboard': 'Overview',
+  '/dashboard': 'Dashboard',
   '/dashboard/clients': 'Clients',
-  '/dashboard/appointments': 'Appointments',
-  '/dashboard/sessions': 'Session Notes',
-  '/dashboard/messages': 'Messages',
+  '/dashboard/tasks': 'Tasks',
+  '/dashboard/calendar': 'Calendar',
   '/dashboard/resources': 'Resources',
-  '/dashboard/analytics': 'Analytics',
-  '/dashboard/audit-log': 'Audit Log',
-  '/dashboard/mood': 'Mood Tracker',
+  '/dashboard/messages': 'Messages',
   '/dashboard/settings': 'Settings',
+  '/dashboard/sessions': 'Sessions',
+  '/dashboard/progress': 'Progress',
 };
 
 const DashboardNav = () => {
@@ -37,9 +32,7 @@ const DashboardNav = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
+  useEffect(() => { loadNotifications(); }, []);
 
   const loadNotifications = async () => {
     const { data, count } = await db.from('notifications').select('*', { count: 'exact' })
@@ -54,23 +47,20 @@ const DashboardNav = () => {
     setNotifications([]);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
-  };
+  const handleSignOut = async () => { await signOut(); navigate("/login"); };
 
-  const currentTitle = routeTitles[location.pathname] || 'Dashboard';
+  const currentTitle = Object.entries(routeTitles).find(([path]) =>
+    location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path))
+  )?.[1] || 'Dashboard';
+
   const roleLabel = role === 'super_admin' ? 'Admin' : role === 'doctor' ? 'Doctor' : 'Client';
 
   return (
     <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 gap-4 sticky top-0 z-10">
       <SidebarTrigger />
-      <div className="hidden sm:block">
-        <h2 className="font-semibold text-sm">{currentTitle}</h2>
-      </div>
+      <h2 className="font-semibold text-sm hidden sm:block">{currentTitle}</h2>
       <div className="flex-1" />
       <div className="flex items-center gap-2">
-        {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -98,8 +88,6 @@ const DashboardNav = () => {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Profile */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-2 h-9">
@@ -116,16 +104,10 @@ const DashboardNav = () => {
               <Badge variant="secondary" className="mt-1 text-xs">{roleLabel}</Badge>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
-              <Settings className="h-4 w-4 mr-2" /> Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/")}>
-              <ExternalLink className="h-4 w-4 mr-2" /> View Website
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}><Settings className="h-4 w-4 mr-2" /> Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/")}><ExternalLink className="h-4 w-4 mr-2" /> View Website</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-              <LogOut className="h-4 w-4 mr-2" /> Sign Out
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut} className="text-destructive"><LogOut className="h-4 w-4 mr-2" /> Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
