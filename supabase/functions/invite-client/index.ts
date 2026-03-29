@@ -45,7 +45,17 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { email, full_name, phone, gender, date_of_birth, address, emergency_contact, emergency_phone, notes, redirect_url } = body
+    const email = body.email?.trim()?.toLowerCase()
+    const full_name = body.full_name?.trim()
+    const phone = body.phone?.trim()
+    const gender = body.gender?.trim()
+    const date_of_birth = body.date_of_birth || null
+    const address = body.address?.trim()
+    const emergency_contact = body.emergency_contact?.trim()
+    const emergency_phone = body.emergency_phone?.trim()
+    const notes = body.notes?.trim()
+    const requestOrigin = req.headers.get('origin')?.replace(/\/$/, '')
+    const redirect_url = body.redirect_url?.trim() || (requestOrigin ? `${requestOrigin}/reset-password` : undefined)
 
     if (!email || !full_name) {
       return new Response(JSON.stringify({ error: 'Email and full name are required' }), {
@@ -53,13 +63,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Create auth user with a random temporary password
-    const tempPassword = crypto.randomUUID() + 'Aa1!'
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name }
+    // Send a real invite email so the client can set their password from the email link
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: redirect_url,
+      data: { full_name }
     })
 
     if (createError) {
@@ -91,21 +98,11 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Generate recovery link for client to set their password
-    const { data: linkData } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email,
-      options: {
-        redirectTo: redirect_url || ''
-      }
-    })
-
-    const inviteLink = linkData?.properties?.action_link || null
-
     return new Response(JSON.stringify({
       success: true,
       user_id: newUser.user.id,
-      invite_link: inviteLink
+      invite_sent: true,
+      redirect_url: redirect_url || null
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
