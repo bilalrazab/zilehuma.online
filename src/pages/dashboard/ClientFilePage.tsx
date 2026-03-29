@@ -162,6 +162,14 @@ const ClientFilePage = () => {
       duration_minutes: sessionForm.duration_minutes, type: sessionForm.type, title: sessionForm.title,
       meeting_link: sessionForm.meeting_link || null, notes: sessionForm.notes || null
     });
+    // Notify client
+    if (client?.user_id) {
+      await db.from('notifications').insert({
+        user_id: client.user_id, title: 'Session Scheduled',
+        message: `Your session is scheduled for ${format(start, 'MMM d, h:mm a')}`,
+        type: 'info', link: '/dashboard/sessions',
+      });
+    }
     setSessionOpen(false); setSessionForm({ start_time: '', duration_minutes: 50, type: 'in-person', title: 'Session', meeting_link: '', notes: '' });
     toast({ title: "Session scheduled" }); load();
   };
