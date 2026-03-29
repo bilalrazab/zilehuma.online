@@ -212,6 +212,15 @@ const ClientFilePage = () => {
     if (resource) {
       await db.from('tasks').insert({ client_id: id, title: `Complete: ${resource.title}`, type: 'homework', priority: 'medium', due_date: assignDueDate || null, created_by: user?.id });
     }
+    // Notify client about resource
+    if (client?.user_id) {
+      const resTitle = allResources.find(r => r.id === assignResourceId)?.title || 'A resource';
+      await db.from('notifications').insert({
+        user_id: client.user_id, title: 'New Resource Assigned',
+        message: `"${resTitle}" has been shared with you`,
+        type: 'info', link: '/dashboard/progress',
+      });
+    }
     setAssignResourceOpen(false); setAssignResourceId(''); setAssignDueDate('');
     toast({ title: "Resource assigned" }); load();
   };
