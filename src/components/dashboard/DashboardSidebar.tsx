@@ -1,6 +1,6 @@
 import {
-  Home, Users, Calendar, FileText, MessageSquare, BookOpen, BarChart3,
-  Shield, Settings, Smile, History
+  Home, Users, CheckSquare, Calendar, BookOpen, MessageSquare,
+  Settings, BarChart3, Clock
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,25 +11,21 @@ import {
 } from "@/components/ui/sidebar";
 
 const doctorMenu = [
-  { title: "Overview", url: "/dashboard", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Clients", url: "/dashboard/clients", icon: Users },
-  { title: "Appointments", url: "/dashboard/appointments", icon: Calendar },
-  { title: "Sessions", url: "/dashboard/sessions", icon: FileText },
-  { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
+  { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
+  { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
   { title: "Resources", url: "/dashboard/resources", icon: BookOpen },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-  { title: "Audit Log", url: "/dashboard/audit-log", icon: Shield },
+  { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
 const clientMenu = [
-  { title: "Overview", url: "/dashboard", icon: Home },
-  { title: "Appointments", url: "/dashboard/appointments", icon: Calendar },
-  { title: "Treatment Plans", url: "/dashboard/treatment-plans", icon: FileText },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Sessions", url: "/dashboard/sessions", icon: Clock },
+  { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
-  { title: "Resources", url: "/dashboard/resources", icon: BookOpen },
-  { title: "Session History", url: "/dashboard/sessions", icon: History },
-  { title: "Mood Tracker", url: "/dashboard/mood", icon: Smile },
+  { title: "Progress", url: "/dashboard/progress", icon: BarChart3 },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 
