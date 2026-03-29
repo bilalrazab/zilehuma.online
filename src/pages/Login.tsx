@@ -56,8 +56,12 @@ const Login = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back to website</a>
+          <div className="mt-4 text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link>
+            </p>
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors block">← Back to website</Link>
           </div>
         </CardContent>
       </Card>
