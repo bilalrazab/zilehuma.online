@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, User } from "lucide-react";
+import { Send, User, MessageSquare, Search, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const db = supabase as any;
@@ -16,6 +16,8 @@ const MessagingPage = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [threadProfiles, setThreadProfiles] = useState<Record<string, any>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { loadThreads(); }, [user]);
@@ -23,9 +25,16 @@ const MessagingPage = () => {
   useEffect(() => {
     if (!selectedThread) return;
     loadMessages(selectedThread);
+    // Mark messages as read
+    db.from('messages').update({ read: true }).eq('thread_id', selectedThread).neq('sender_id', user?.id).eq('read', false);
+    
     const channel = supabase.channel(`messages-${selectedThread}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `thread_id=eq.${selectedThread}` }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `thread_id=eq.${selectedThread}` }, (payload: any) => {
         setMessages(prev => [...prev, payload.new]);
+        // Mark incoming as read immediately
+        if (payload.new.sender_id !== user?.id) {
+          db.from('messages').update({ read: true }).eq('id', payload.new.id);
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -37,7 +46,8 @@ const MessagingPage = () => {
     const { data } = await db.from('message_threads').select('*').order('last_message_at', { ascending: false });
     setThreads(data || []);
     const profileIds = new Set<string>();
-    data?.forEach((t: any) => { profileIds.add(t.participant_1); profileIds.add(t.participant_2); });
+    data?.forEach((t: any) => { profileIds.add(t.participant_one); profileIds.add(t.participant_two); });
+    profileIds.delete(undefined);
     if (profileIds.size > 0) {
       const { data: profiles } = await db.from('profiles').select('id, full_name, avatar_url').in('id', Array.from(profileIds));
       const map: Record<string, any> = {};
@@ -52,57 +62,145 @@ const MessagingPage = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedThread) return;
+    if (!newMessage.trim() || !selectedThread || sending) return;
+    setSending(true);
     await db.from('messages').insert({ thread_id: selectedThread, sender_id: user?.id, content: newMessage });
     await db.from('message_threads').update({ last_message_at: new Date().toISOString() }).eq('id', selectedThread);
     setNewMessage("");
+    setSending(false);
   };
 
   const getOtherUser = (thread: any) => {
-    const otherId = thread.participant_1 === user?.id ? thread.participant_2 : thread.participant_1;
+    const otherId = thread.participant_one === user?.id ? thread.participant_two : thread.participant_one;
     return threadProfiles[otherId]?.full_name || 'User';
   };
 
+  const getOtherInitial = (thread: any) => {
+    const name = getOtherUser(thread);
+    return name.charAt(0).toUpperCase();
+  };
+
+  const filteredThreads = threads.filter(t =>
+    !searchQuery || getOtherUser(t).toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatMessageTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const selectedThreadData = threads.find(t => t.id === selectedThread);
+
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-4 flex-col md:flex-row">
+    <div className="flex h-[calc(100vh-8rem)] gap-0 flex-col md:flex-row rounded-xl border overflow-hidden bg-background">
       {/* Thread list */}
-      <div className="w-full md:w-72 flex-shrink-0 space-y-2 overflow-auto">
-        <h2 className="font-heading font-bold text-lg mb-3">Messages</h2>
-        {threads.map(t => (
-          <Card key={t.id} className={cn("cursor-pointer transition-colors", selectedThread === t.id && "border-primary bg-primary/5")} onClick={() => setSelectedThread(t.id)}>
-            <CardContent className="p-3 flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center"><User className="h-4 w-4 text-primary" /></div>
-              <div className="min-w-0">
-                <p className="font-medium text-sm truncate">{getOtherUser(t)}</p>
-                <p className="text-xs text-muted-foreground">{new Date(t.last_message_at).toLocaleDateString()}</p>
+      <div className={cn(
+        "w-full md:w-80 flex-shrink-0 border-r flex flex-col",
+        selectedThread ? "hidden md:flex" : "flex"
+      )}>
+        <div className="p-4 border-b">
+          <h2 className="font-heading font-bold text-lg mb-3">Messages</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search conversations..." className="pl-9 h-9" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto">
+          {filteredThreads.map(t => (
+            <div key={t.id}
+              className={cn("flex items-center gap-3 p-4 cursor-pointer border-b hover:bg-muted/50 transition-colors",
+                selectedThread === t.id && "bg-primary/5 border-l-2 border-l-primary"
+              )}
+              onClick={() => setSelectedThread(t.id)}>
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary flex-shrink-0">
+                {getOtherInitial(t)}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-        {threads.length === 0 && <p className="text-sm text-muted-foreground">No conversations yet</p>}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm truncate">{getOtherUser(t)}</p>
+                <p className="text-xs text-muted-foreground">{t.last_message_at ? formatMessageTime(t.last_message_at) : 'No messages'}</p>
+              </div>
+            </div>
+          ))}
+          {filteredThreads.length === 0 && (
+            <div className="text-center py-12 px-4">
+              <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No conversations</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col border rounded-lg bg-background min-h-[300px]">
-        {selectedThread ? (
+      <div className={cn(
+        "flex-1 flex flex-col min-h-0",
+        !selectedThread ? "hidden md:flex" : "flex"
+      )}>
+        {selectedThread && selectedThreadData ? (
           <>
+            {/* Chat header */}
+            <div className="p-4 border-b flex items-center gap-3 bg-background">
+              <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={() => setSelectedThread(null)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center font-semibold text-primary text-sm">
+                {getOtherInitial(selectedThreadData)}
+              </div>
+              <div>
+                <p className="font-semibold text-sm">{getOtherUser(selectedThreadData)}</p>
+              </div>
+            </div>
+            
+            {/* Messages */}
             <div className="flex-1 overflow-auto p-4 space-y-3">
-              {messages.map(m => (
-                <div key={m.id} className={cn("flex", m.sender_id === user?.id ? "justify-end" : "justify-start")}>
-                  <div className={cn("max-w-[70%] rounded-2xl px-4 py-2 text-sm", m.sender_id === user?.id ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                    {m.content}
-                  </div>
+              {messages.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground text-sm">
+                  No messages yet. Start the conversation!
                 </div>
-              ))}
+              )}
+              {messages.map((m, i) => {
+                const isMe = m.sender_id === user?.id;
+                const showTime = i === 0 || new Date(m.created_at).getTime() - new Date(messages[i-1].created_at).getTime() > 300000;
+                return (
+                  <div key={m.id}>
+                    {showTime && (
+                      <p className="text-center text-xs text-muted-foreground my-4">{formatMessageTime(m.created_at)}</p>
+                    )}
+                    <div className={cn("flex", isMe ? "justify-end" : "justify-start")}>
+                      <div className={cn(
+                        "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                        isMe ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted rounded-bl-md"
+                      )}>
+                        {m.content}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
               <div ref={endRef} />
             </div>
-            <div className="p-3 border-t flex gap-2">
-              <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} placeholder="Type a message..." onKeyDown={e => e.key === 'Enter' && sendMessage()} />
-              <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
+            
+            {/* Input */}
+            <div className="p-3 border-t flex gap-2 bg-background">
+              <Input
+                value={newMessage}
+                onChange={e => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                className="rounded-full"
+              />
+              <Button size="icon" onClick={sendMessage} disabled={!newMessage.trim() || sending} className="rounded-full flex-shrink-0">
+                <Send className="h-4 w-4" />
+              </Button>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">Select a conversation</div>
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+            <MessageSquare className="h-16 w-16 text-muted-foreground/20 mb-4" />
+            <p className="font-medium text-lg">Select a conversation</p>
+            <p className="text-sm mt-1">Choose from your existing conversations</p>
+          </div>
         )}
       </div>
     </div>
