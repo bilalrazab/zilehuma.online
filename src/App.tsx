@@ -13,6 +13,7 @@ import ServicePage from "./pages/ServicePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ClientsPage from "./pages/dashboard/ClientsPage";
