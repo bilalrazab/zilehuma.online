@@ -25,6 +25,7 @@ const doctorMenu = [
 const clientMenu = [
   { title: "Overview", url: "/dashboard", icon: Home },
   { title: "Appointments", url: "/dashboard/appointments", icon: Calendar },
+  { title: "Treatment Plans", url: "/dashboard/treatment-plans", icon: FileText },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Resources", url: "/dashboard/resources", icon: BookOpen },
   { title: "Session History", url: "/dashboard/sessions", icon: History },
