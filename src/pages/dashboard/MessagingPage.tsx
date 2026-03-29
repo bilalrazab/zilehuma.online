@@ -86,10 +86,11 @@ const MessagingPage = () => {
   };
 
   const loadDoctors = async () => {
-    // Client loads doctors they can message
-    const { data: roleRows } = await db.from('user_roles').select('user_id').in('role', ['doctor', 'super_admin']);
-    if (!roleRows || roleRows.length === 0) return;
-    const doctorIds = roleRows.map((r: any) => r.user_id);
+    // Client finds their assigned therapist via the clients table (doctor_id)
+    const { data: clientRows } = await db.from('clients').select('doctor_id').eq('user_id', user?.id);
+    if (!clientRows || clientRows.length === 0) return;
+    const doctorIds = [...new Set(clientRows.map((c: any) => c.doctor_id).filter(Boolean))];
+    if (doctorIds.length === 0) return;
     const { data: profiles } = await db.from('profiles').select('id, full_name, email, avatar_url').in('id', doctorIds);
     setDoctors(profiles || []);
   };
