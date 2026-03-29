@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import {
   ArrowLeft, AlertTriangle, Calendar, Clock, DollarSign, Plus,
   FileText, CheckSquare, BookOpen, Target, Activity, Edit2,
-  Trash2, Download, Send, Video, MapPin, Phone, ChevronDown, ChevronUp, User
+  Trash2, Download, Send, Video, MapPin, Phone, ChevronDown, ChevronUp, User, ExternalLink
 } from "lucide-react";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
