@@ -4,27 +4,108 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar as CalIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Video, Trash2, Edit2 } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const db = supabase as any;
 
 const CalendarPage = () => {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const isStaff = role === 'doctor' || role === 'super_admin';
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [sessions, setSessions] = useState<any[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [clients, setClients] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editSession, setEditSession] = useState<any>(null);
+  const [detailSession, setDetailSession] = useState<any>(null);
+  const [form, setForm] = useState({ client_id: '', start_time: '', duration_minutes: 50, type: 'in-person', title: 'Session', meeting_link: '', notes: '' });
 
   useEffect(() => { load(); }, [currentMonth]);
+  useEffect(() => { if (isStaff) loadClients(); }, []);
 
   const load = async () => {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
-    const { data } = await db.from('appointments').select('*, clients(full_name)')
+    const { data } = await db.from('appointments').select('*, clients(full_name, email, phone)')
       .gte('start_time', start.toISOString()).lte('start_time', end.toISOString()).order('start_time');
     setSessions(data || []);
+  };
+
+  const loadClients = async () => {
+    const { data } = await db.from('clients').select('id, full_name').eq('status', 'active').order('full_name');
+    setClients(data || []);
+  };
+
+  const createSession = async () => {
+    if (!form.client_id || !form.start_time) { toast({ title: "Client and time required", variant: "destructive" }); return; }
+    const start = new Date(form.start_time);
+    const end = new Date(start.getTime() + form.duration_minutes * 60000);
+    await db.from('appointments').insert({
+      client_id: form.client_id, doctor_id: user?.id, start_time: start.toISOString(), end_time: end.toISOString(),
+      duration_minutes: form.duration_minutes, type: form.type, title: form.title,
+      meeting_link: form.meeting_link || null, notes: form.notes || null,
+    });
+    setCreateOpen(false);
+    resetForm();
+    toast({ title: "Session scheduled" }); load();
+  };
+
+  const updateSession = async () => {
+    if (!editSession) return;
+    const start = new Date(form.start_time);
+    const end = new Date(start.getTime() + form.duration_minutes * 60000);
+    await db.from('appointments').update({
+      start_time: start.toISOString(), end_time: end.toISOString(),
+      duration_minutes: form.duration_minutes, type: form.type, title: form.title,
+      meeting_link: form.meeting_link || null, notes: form.notes || null,
+    }).eq('id', editSession.id);
+    setEditSession(null);
+    resetForm();
+    toast({ title: "Session updated" }); load();
+  };
+
+  const updateStatus = async (id: string, status: string) => {
+    await db.from('appointments').update({ status }).eq('id', id);
+    toast({ title: `Session marked as ${status}` }); setDetailSession(null); load();
+  };
+
+  const cancelSession = async (id: string) => {
+    await db.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+    toast({ title: "Session cancelled" }); setDetailSession(null); load();
+  };
+
+  const deleteSession = async (id: string) => {
+    await db.from('appointments').delete().eq('id', id);
+    toast({ title: "Session deleted" }); setDetailSession(null); load();
+  };
+
+  const resetForm = () => setForm({ client_id: '', start_time: '', duration_minutes: 50, type: 'in-person', title: 'Session', meeting_link: '', notes: '' });
+
+  const openCreate = (date?: Date) => {
+    resetForm();
+    if (date) {
+      const d = format(date, "yyyy-MM-dd'T'10:00");
+      setForm(p => ({ ...p, start_time: d }));
+    }
+    setCreateOpen(true);
+  };
+
+  const openEdit = (s: any) => {
+    setForm({
+      client_id: s.client_id, start_time: format(parseISO(s.start_time), "yyyy-MM-dd'T'HH:mm"),
+      duration_minutes: s.duration_minutes || 50, type: s.type, title: s.title,
+      meeting_link: s.meeting_link || '', notes: s.notes || '',
+    });
+    setEditSession(s);
   };
 
   const monthStart = startOfMonth(currentMonth);
@@ -32,7 +113,6 @@ const CalendarPage = () => {
   const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
-
   const getSessionsForDay = (day: Date) => sessions.filter(s => isSameDay(parseISO(s.start_time), day));
   const selectedSessions = selectedDate ? getSessionsForDay(selectedDate) : [];
 
@@ -40,10 +120,68 @@ const CalendarPage = () => {
     scheduled: 'bg-blue-500', completed: 'bg-emerald-500', cancelled: 'bg-muted-foreground', no_show: 'bg-destructive',
   };
 
+  const SessionForm = ({ onSave, isEdit }: { onSave: () => void; isEdit?: boolean }) => (
+    <div className="space-y-3">
+      {!isEdit && (
+        <div><Label>Client *</Label>
+          <Select value={form.client_id} onValueChange={v => setForm(p => ({ ...p, client_id: v }))}>
+            <SelectTrigger><SelectValue placeholder="Select client..." /></SelectTrigger>
+            <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      )}
+      <div><Label>Date & Time *</Label><Input type="datetime-local" value={form.start_time} onChange={e => setForm(p => ({ ...p, start_time: e.target.value }))} /></div>
+      <div className="grid grid-cols-2 gap-3">
+        <div><Label>Duration (min)</Label><Input type="number" value={form.duration_minutes} onChange={e => setForm(p => ({ ...p, duration_minutes: parseInt(e.target.value) || 50 }))} /></div>
+        <div><Label>Type</Label>
+          <Select value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="in-person">In-Person</SelectItem>
+              <SelectItem value="online">Online</SelectItem>
+              <SelectItem value="phone">Phone</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div><Label>Title</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
+      {form.type === 'online' && <div><Label>Meeting Link</Label><Input value={form.meeting_link} onChange={e => setForm(p => ({ ...p, meeting_link: e.target.value }))} placeholder="https://zoom.us/..." /></div>}
+      <div><Label>Notes</Label><Input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} /></div>
+      <Button onClick={onSave} className="w-full">{isEdit ? 'Save Changes' : 'Schedule Session'}</Button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-heading font-bold">Calendar</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="text-2xl font-heading font-bold">Calendar</h1>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => { setCurrentMonth(new Date()); setSelectedDate(new Date()); }}>Today</Button>
+          {isStaff && <Button size="sm" onClick={() => openCreate(selectedDate || new Date())}><Plus className="h-3.5 w-3.5 mr-1.5" /> New Session</Button>}
+        </div>
+      </div>
 
+      {/* Month Stats */}
+      <div className="grid grid-cols-4 gap-3">
+        <Card><CardContent className="p-3 text-center">
+          <p className="text-lg font-bold">{sessions.length}</p>
+          <p className="text-[10px] text-muted-foreground">Total</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-3 text-center">
+          <p className="text-lg font-bold text-blue-500">{sessions.filter(s => s.status === 'scheduled').length}</p>
+          <p className="text-[10px] text-muted-foreground">Scheduled</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-3 text-center">
+          <p className="text-lg font-bold text-emerald-500">{sessions.filter(s => s.status === 'completed').length}</p>
+          <p className="text-[10px] text-muted-foreground">Completed</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-3 text-center">
+          <p className="text-lg font-bold text-destructive">{sessions.filter(s => s.status === 'no_show').length}</p>
+          <p className="text-[10px] text-muted-foreground">No-shows</p>
+        </CardContent></Card>
+      </div>
+
+      {/* Calendar Grid */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -63,14 +201,14 @@ const CalendarPage = () => {
               const selected = selectedDate && isSameDay(day, selectedDate);
               return (
                 <button key={day.toISOString()} onClick={() => setSelectedDate(day)}
-                  className={`relative min-h-[3rem] p-1 text-sm rounded-lg transition-colors
-                    ${!inMonth ? 'text-muted-foreground/40' : ''}
+                  className={`relative min-h-[3.5rem] p-1 text-sm rounded-lg transition-colors
+                    ${!inMonth ? 'text-muted-foreground/30' : ''}
                     ${isToday(day) ? 'bg-primary/10 font-bold' : ''}
                     ${selected ? 'ring-2 ring-primary' : 'hover:bg-muted/50'}
                   `}>
                   <span className="text-xs">{format(day, 'd')}</span>
                   {daySessions.length > 0 && (
-                    <div className="flex gap-0.5 justify-center mt-0.5">
+                    <div className="flex gap-0.5 justify-center mt-0.5 flex-wrap">
                       {daySessions.slice(0, 3).map(s => (
                         <div key={s.id} className={`h-1.5 w-1.5 rounded-full ${statusColor[s.status] || 'bg-primary'}`} />
                       ))}
@@ -84,25 +222,36 @@ const CalendarPage = () => {
         </CardContent>
       </Card>
 
+      {/* Selected Day Sessions */}
       {selectedDate && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</CardTitle>
+              {isStaff && <Button size="sm" variant="outline" onClick={() => openCreate(selectedDate)}><Plus className="h-3 w-3 mr-1" /> Add</Button>}
+            </div>
           </CardHeader>
           <CardContent>
             {selectedSessions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No sessions on this day</p>
+              <p className="text-sm text-muted-foreground text-center py-6">No sessions on this day</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {selectedSessions.map(s => (
-                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
-                    onClick={() => navigate(`/dashboard/clients/${s.client_id}`)}>
-                    <div className={`h-3 w-3 rounded-full ${statusColor[s.status] || 'bg-primary'}`} />
-                    <div className="flex-1">
+                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 cursor-pointer transition-colors"
+                    onClick={() => setDetailSession(s)}>
+                    <div className={`h-3 w-3 rounded-full flex-shrink-0 ${statusColor[s.status] || 'bg-primary'}`} />
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{s.clients?.full_name || 'Client'}</p>
-                      <p className="text-xs text-muted-foreground">{format(parseISO(s.start_time), 'h:mm a')} · {s.type} · {s.duration_minutes || 50}min</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(s.start_time), 'h:mm a')}</span>
+                        <span>{s.duration_minutes || 50}min</span>
+                        <span className="flex items-center gap-0.5">
+                          {s.type === 'online' ? <Video className="h-3 w-3" /> : <MapPin className="h-3 w-3" />}
+                          {s.type}
+                        </span>
+                      </div>
                     </div>
-                    <Badge variant={s.status === 'completed' ? 'default' : s.status === 'no_show' ? 'destructive' : 'outline'} className="text-xs">{s.status}</Badge>
+                    <Badge variant={s.status === 'completed' ? 'default' : s.status === 'no_show' ? 'destructive' : s.status === 'cancelled' ? 'secondary' : 'outline'} className="text-xs">{s.status}</Badge>
                   </div>
                 ))}
               </div>
@@ -110,6 +259,77 @@ const CalendarPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Session Detail Dialog */}
+      <Dialog open={!!detailSession} onOpenChange={o => { if (!o) setDetailSession(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Session Details</DialogTitle></DialogHeader>
+          {detailSession && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                  {detailSession.clients?.full_name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="font-semibold">{detailSession.clients?.full_name}</p>
+                  {detailSession.clients?.email && <p className="text-xs text-muted-foreground">{detailSession.clients.email}</p>}
+                  {detailSession.clients?.phone && <p className="text-xs text-muted-foreground">{detailSession.clients.phone}</p>}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{format(parseISO(detailSession.start_time), 'MMM d, yyyy')}</span></div>
+                <div><span className="text-muted-foreground">Time:</span> <span className="font-medium">{format(parseISO(detailSession.start_time), 'h:mm a')}</span></div>
+                <div><span className="text-muted-foreground">Duration:</span> <span className="font-medium">{detailSession.duration_minutes || 50}min</span></div>
+                <div><span className="text-muted-foreground">Type:</span> <span className="font-medium capitalize">{detailSession.type}</span></div>
+                <div><span className="text-muted-foreground">Status:</span> <Badge variant={detailSession.status === 'completed' ? 'default' : 'outline'} className="text-xs ml-1">{detailSession.status}</Badge></div>
+              </div>
+              {detailSession.meeting_link && (
+                <Button variant="outline" className="w-full" onClick={() => window.open(detailSession.meeting_link, '_blank')}>
+                  <Video className="h-4 w-4 mr-2" /> Join Meeting
+                </Button>
+              )}
+              {detailSession.notes && <div className="p-3 rounded-lg bg-muted text-sm"><p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>{detailSession.notes}</div>}
+              {isStaff && (
+                <div className="space-y-2 border-t pt-4">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase">Actions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {detailSession.status === 'scheduled' && (
+                      <>
+                        <Button size="sm" onClick={() => updateStatus(detailSession.id, 'completed')}>✓ Complete</Button>
+                        <Button size="sm" variant="outline" className="text-destructive" onClick={() => updateStatus(detailSession.id, 'no_show')}>No-show</Button>
+                        <Button size="sm" variant="outline" onClick={() => { setDetailSession(null); openEdit(detailSession); }}>
+                          <Edit2 className="h-3 w-3 mr-1" /> Edit
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => cancelSession(detailSession.id)}>Cancel</Button>
+                      </>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard/clients/${detailSession.client_id}`)}>Open File</Button>
+                    <Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteSession(detailSession.id)}>
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Dialog */}
+      <Dialog open={createOpen} onOpenChange={o => { setCreateOpen(o); if (!o) resetForm(); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Schedule Session</DialogTitle></DialogHeader>
+          <SessionForm onSave={createSession} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editSession} onOpenChange={o => { if (!o) { setEditSession(null); resetForm(); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Session</DialogTitle></DialogHeader>
+          <SessionForm onSave={updateSession} isEdit />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
