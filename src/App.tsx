@@ -14,6 +14,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ResetPassword from "./pages/ResetPassword";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ClientsPage from "./pages/dashboard/ClientsPage";
@@ -26,6 +27,7 @@ import AnalyticsPage from "./pages/dashboard/AnalyticsPage";
 import AuditLogPage from "./pages/dashboard/AuditLogPage";
 import MoodTrackerPage from "./pages/dashboard/MoodTrackerPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import TreatmentPlansPage from "./pages/dashboard/TreatmentPlansPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,7 @@ const App = () => (
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="clients" element={<ClientsPage />} />
@@ -58,6 +61,7 @@ const App = () => (
               <Route path="audit-log" element={<AuditLogPage />} />
               <Route path="mood" element={<MoodTrackerPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="treatment-plans" element={<TreatmentPlansPage />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
