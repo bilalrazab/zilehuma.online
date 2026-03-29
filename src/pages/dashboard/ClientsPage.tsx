@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, UserPlus, Phone, Mail, AlertTriangle, Users } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,38 +46,98 @@ const ClientsPage = () => {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteSent, setInviteSent] = useState(false);
-  const [inviting, setInviting] = useState(false);
-  const [form, setForm] = useState({ full_name: '', email: '', phone: '' });
+  const [inviteState, setInviteState] = useState<'form' | 'sending' | 'success' | 'error'>('form');
+  const [inviteError, setInviteError] = useState('');
+  const [invitedEmail, setInvitedEmail] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({
+    full_name: '', email: '', phone: '', gender: '', date_of_birth: '',
+    address: '', emergency_contact: '', emergency_phone: '', notes: ''
+  });
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
-    const { data } = await db.from('clients').select('*').order('created_at', { ascending: false });
-    setClients(data || []);
+    try {
+      setLoading(true);
+      const { data, error } = await db.from('clients').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setClients(data || []);
+    } catch (err: any) {
+      toast({ title: "Failed to load clients", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetInviteForm = () => {
+    setForm({ full_name: '', email: '', phone: '', gender: '', date_of_birth: '', address: '', emergency_contact: '', emergency_phone: '', notes: '' });
+    setInviteState('form');
+    setInviteError('');
+    setInvitedEmail('');
   };
 
   const handleInvite = async () => {
-    if (!form.full_name || !form.email) { toast({ title: "Name and email required", variant: "destructive" }); return; }
-    setInviting(true);
+    if (!form.full_name.trim()) {
+      setInviteError('Full name is required');
+      return;
+    }
+    if (!form.email.trim()) {
+      setInviteError('Email is required');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setInviteError('Please enter a valid email address');
+      return;
+    }
+
+    setInviteState('sending');
+    setInviteError('');
+
     try {
       const { data, error } = await supabase.functions.invoke('invite-client', {
         body: {
-          email: form.email,
-          full_name: form.full_name,
-          phone: form.phone,
+          ...form,
+          email: form.email.trim().toLowerCase(),
+          full_name: form.full_name.trim(),
           redirect_url: `${window.location.origin}/reset-password`
         }
       });
-      if (error) throw error;
-      if (data?.success) {
-        setInviteSent(true);
-        toast({ title: "Invite email sent", description: `Password setup email sent to ${form.email}.` });
-        load();
+
+      if (error) {
+        // supabase.functions.invoke wraps non-2xx as FunctionsHttpError
+        let errorMessage = 'Failed to send invitation. Please try again.';
+        if (error.message) errorMessage = error.message;
+        throw new Error(errorMessage);
       }
-      else if (data?.error) toast({ title: "Error", description: data.error, variant: "destructive" });
-    } catch (err: any) { toast({ title: "Error", description: err.message, variant: "destructive" }); }
-    setInviting(false);
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.success) {
+        setInvitedEmail(form.email.trim().toLowerCase());
+        setInviteState('success');
+        toast({
+          title: "✅ Invitation sent!",
+          description: `A setup email has been sent to ${form.email}`,
+        });
+        load();
+      } else {
+        throw new Error('Unexpected response from server');
+      }
+    } catch (err: any) {
+      console.error('Invite error:', err);
+      const msg = err.message || 'An unexpected error occurred';
+      setInviteState('error');
+      setInviteError(msg);
+      toast({
+        title: "Invitation failed",
+        description: msg,
+        variant: "destructive"
+      });
+    }
   };
 
   const filtered = clients.filter(c => {
@@ -91,23 +153,131 @@ const ClientsPage = () => {
           <h1 className="text-2xl font-heading font-bold">Clients</h1>
           <p className="text-sm text-muted-foreground">{clients.length} total</p>
         </div>
-        <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) { setInviteSent(false); setForm({ full_name: '', email: '', phone: '' }); } }}>
-          <DialogTrigger asChild><Button><UserPlus className="h-4 w-4 mr-2" /> Invite Client</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{inviteSent ? 'Invite Email Sent' : 'Invite New Client'}</DialogTitle></DialogHeader>
-            {inviteSent ? (
+        <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) resetInviteForm(); }}>
+          <DialogTrigger asChild>
+            <Button><UserPlus className="h-4 w-4 mr-2" /> Invite Client</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {inviteState === 'success' ? '✅ Invitation Sent' :
+                 inviteState === 'error' ? '❌ Invitation Failed' :
+                 'Invite New Client'}
+              </DialogTitle>
+              <DialogDescription>
+                {inviteState === 'form' || inviteState === 'sending'
+                  ? 'Send a secure invitation email so the client can set up their account and access the portal.'
+                  : inviteState === 'success'
+                  ? 'The client will receive an email with instructions.'
+                  : 'Something went wrong. You can try again.'}
+              </DialogDescription>
+            </DialogHeader>
+
+            {inviteState === 'success' && (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  The client has been emailed a fresh invitation link to create their password and access the portal.
-                </p>
-                <Button variant="outline" className="w-full" onClick={() => setInviteOpen(false)}>Done</Button>
+                <Alert className="border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <AlertDescription className="text-emerald-800 dark:text-emerald-300">
+                    A secure invitation email has been sent to <strong>{invitedEmail}</strong>.
+                    They will receive a link to set their password and access the client portal.
+                  </AlertDescription>
+                </Alert>
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription className="text-xs text-muted-foreground">
+                    The client should check their inbox (and spam/junk folder). The link expires in 24 hours.
+                    If they don't receive it, you can delete and re-invite them.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setInviteOpen(false)}>Done</Button>
+                  <Button className="flex-1" onClick={resetInviteForm}>
+                    <UserPlus className="h-4 w-4 mr-2" /> Invite Another
+                  </Button>
+                </div>
               </div>
-            ) : (
+            )}
+
+            {inviteState === 'error' && (
               <div className="space-y-4">
-                <div><Label>Full Name *</Label><Input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))} /></div>
-                <div><Label>Email *</Label><Input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
-                <div><Label>Phone</Label><Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} /></div>
-                <Button onClick={handleInvite} disabled={inviting} className="w-full">{inviting ? 'Inviting...' : 'Send Invite'}</Button>
+                <Alert variant="destructive">
+                  <XCircle className="h-4 w-4" />
+                  <AlertDescription>{inviteError}</AlertDescription>
+                </Alert>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setInviteOpen(false)}>Cancel</Button>
+                  <Button className="flex-1" onClick={() => { setInviteState('form'); setInviteError(''); }}>
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {(inviteState === 'form' || inviteState === 'sending') && (
+              <div className="space-y-4">
+                {inviteError && (
+                  <Alert variant="destructive">
+                    <XCircle className="h-4 w-4" />
+                    <AlertDescription>{inviteError}</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <Label className="text-xs font-medium">Full Name <span className="text-destructive">*</span></Label>
+                    <Input placeholder="e.g. Ahmed Khan" value={form.full_name} onChange={e => { setForm(p => ({ ...p, full_name: e.target.value })); setInviteError(''); }} disabled={inviteState === 'sending'} />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Email <span className="text-destructive">*</span></Label>
+                    <Input type="email" placeholder="client@email.com" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setInviteError(''); }} disabled={inviteState === 'sending'} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs font-medium">Phone</Label>
+                      <Input placeholder="+92..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Gender</Label>
+                      <Input placeholder="Male / Female" value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs font-medium">Date of Birth</Label>
+                      <Input type="date" value={form.date_of_birth} onChange={e => setForm(p => ({ ...p, date_of_birth: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Address</Label>
+                      <Input placeholder="City" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs font-medium">Emergency Contact</Label>
+                      <Input placeholder="Name" value={form.emergency_contact} onChange={e => setForm(p => ({ ...p, emergency_contact: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium">Emergency Phone</Label>
+                      <Input placeholder="+92..." value={form.emergency_phone} onChange={e => setForm(p => ({ ...p, emergency_phone: e.target.value }))} disabled={inviteState === 'sending'} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Notes</Label>
+                    <Textarea placeholder="Initial notes, referral source, concerns..." value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} disabled={inviteState === 'sending'} />
+                  </div>
+                </div>
+
+                <Button onClick={handleInvite} disabled={inviteState === 'sending'} className="w-full">
+                  {inviteState === 'sending' ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending Invitation...</>
+                  ) : (
+                    <><Mail className="h-4 w-4 mr-2" /> Send Invitation Email</>
+                  )}
+                </Button>
+
+                <p className="text-[11px] text-muted-foreground text-center">
+                  The client will receive a secure email to set their password and access their portal.
+                </p>
               </div>
             )}
           </DialogContent>
@@ -131,10 +301,19 @@ const ClientsPage = () => {
         <Input placeholder="Search clients..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <Users className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-          <p className="text-muted-foreground font-medium text-lg">No clients found</p>
+          <p className="text-muted-foreground font-medium text-lg">
+            {search || stageFilter !== 'all' ? 'No clients match your filters' : 'No clients yet'}
+          </p>
+          {!search && stageFilter === 'all' && (
+            <p className="text-sm text-muted-foreground mt-1">Click "Invite Client" to add your first client</p>
+          )}
         </div>
       ) : (
         <div className="grid gap-3">
