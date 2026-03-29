@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, UserPlus, Copy, Phone, Mail, AlertTriangle, Users } from "lucide-react";
+import { Search, UserPlus, Phone, Mail, AlertTriangle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,7 +44,7 @@ const ClientsPage = () => {
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('all');
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteLink, setInviteLink] = useState('');
+  const [inviteSent, setInviteSent] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', phone: '' });
 
@@ -60,10 +60,19 @@ const ClientsPage = () => {
     setInviting(true);
     try {
       const { data, error } = await supabase.functions.invoke('invite-client', {
-        body: { email: form.email, full_name: form.full_name, phone: form.phone }
+        body: {
+          email: form.email,
+          full_name: form.full_name,
+          phone: form.phone,
+          redirect_url: `${window.location.origin}/reset-password`
+        }
       });
       if (error) throw error;
-      if (data?.invite_link) { setInviteLink(data.invite_link); toast({ title: "Client invited" }); load(); }
+      if (data?.success) {
+        setInviteSent(true);
+        toast({ title: "Invite email sent", description: `Password setup email sent to ${form.email}.` });
+        load();
+      }
       else if (data?.error) toast({ title: "Error", description: data.error, variant: "destructive" });
     } catch (err: any) { toast({ title: "Error", description: err.message, variant: "destructive" }); }
     setInviting(false);
@@ -82,18 +91,16 @@ const ClientsPage = () => {
           <h1 className="text-2xl font-heading font-bold">Clients</h1>
           <p className="text-sm text-muted-foreground">{clients.length} total</p>
         </div>
-        <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) { setInviteLink(''); setForm({ full_name: '', email: '', phone: '' }); } }}>
+        <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) { setInviteSent(false); setForm({ full_name: '', email: '', phone: '' }); } }}>
           <DialogTrigger asChild><Button><UserPlus className="h-4 w-4 mr-2" /> Invite Client</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>{inviteLink ? 'Client Invited!' : 'Invite New Client'}</DialogTitle></DialogHeader>
-            {inviteLink ? (
+            <DialogHeader><DialogTitle>{inviteSent ? 'Invite Email Sent' : 'Invite New Client'}</DialogTitle></DialogHeader>
+            {inviteSent ? (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">Share this link with your client:</p>
-                <div className="flex gap-2">
-                  <Input value={inviteLink} readOnly className="text-xs" />
-                  <Button size="icon" variant="outline" onClick={() => { navigator.clipboard.writeText(inviteLink); toast({ title: "Copied!" }); }}><Copy className="h-4 w-4" /></Button>
-                </div>
-                <Button variant="outline" className="w-full" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Set up your portal: ${inviteLink}`)}`, '_blank')}>Share via WhatsApp</Button>
+                <p className="text-sm text-muted-foreground">
+                  The client has been emailed a fresh invitation link to create their password and access the portal.
+                </p>
+                <Button variant="outline" className="w-full" onClick={() => setInviteOpen(false)}>Done</Button>
               </div>
             ) : (
               <div className="space-y-4">
