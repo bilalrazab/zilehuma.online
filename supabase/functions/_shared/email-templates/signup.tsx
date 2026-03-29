@@ -11,6 +11,7 @@ import {
   Html,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -32,26 +33,27 @@ export const SignupEmail = ({
     <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
+        <Section style={header}>
+          <Text style={brandName}>Zil-e-Huma Suleman</Text>
+          <Text style={brandTitle}>Clinical Psychologist</Text>
+        </Section>
+        <Heading style={h1}>Welcome! Confirm your email</Heading>
         <Text style={text}>
-          Thanks for signing up for{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          !
+          Thank you for joining{' '}
+          <Link href={siteUrl} style={link}><strong>{siteName}</strong></Link>
+          . We're glad to have you.
         </Text>
         <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
+          Please verify your email address ({recipient}) to get started:
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Verify Email
-        </Button>
+        <Section style={buttonSection}>
+          <Button style={button} href={confirmationUrl}>Verify My Email</Button>
+        </Section>
         <Text style={footer}>
           If you didn't create an account, you can safely ignore this email.
+        </Text>
+        <Text style={privacyNote}>
+          <Link href="https://zilehuma.online/privacy-policy" style={privacyLink}>Privacy Policy</Link>
         </Text>
       </Container>
     </Body>
@@ -60,27 +62,16 @@ export const SignupEmail = ({
 
 export default SignupEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Lora', Georgia, serif" }
+const container = { padding: '40px 30px', maxWidth: '480px', margin: '0 auto' }
+const header = { textAlign: 'center' as const, marginBottom: '30px', borderBottom: '2px solid hsl(152, 30%, 42%)', paddingBottom: '20px' }
+const brandName = { fontSize: '20px', fontWeight: 'bold' as const, color: 'hsl(152, 30%, 42%)', margin: '0', lineHeight: '1.3' }
+const brandTitle = { fontSize: '12px', color: 'hsl(220, 10%, 46%)', margin: '4px 0 0', textTransform: 'uppercase' as const, letterSpacing: '1px' }
+const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: 'hsl(220, 20%, 14%)', margin: '0 0 20px' }
+const text = { fontSize: '15px', color: 'hsl(220, 10%, 46%)', lineHeight: '1.6', margin: '0 0 20px' }
+const link = { color: 'hsl(152, 30%, 42%)', textDecoration: 'underline' }
+const buttonSection = { textAlign: 'center' as const, margin: '30px 0' }
+const button = { backgroundColor: 'hsl(152, 30%, 42%)', color: '#ffffff', fontSize: '15px', borderRadius: '20px', padding: '14px 28px', textDecoration: 'none', fontWeight: 'bold' as const }
+const footer = { fontSize: '13px', color: '#999999', margin: '30px 0 0', lineHeight: '1.5' }
+const privacyNote = { fontSize: '12px', color: '#bbbbbb', margin: '15px 0 0', textAlign: 'center' as const }
+const privacyLink = { color: '#bbbbbb', textDecoration: 'underline' }
