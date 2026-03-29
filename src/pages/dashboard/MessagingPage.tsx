@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Send, MessageSquare, Search, Plus, ArrowLeft, Clock, ChevronDown, Copy, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Send, MessageSquare, Search, Plus, ArrowLeft, Clock, Copy, Trash2, Users } from "lucide-react";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,12 +35,16 @@ const MessagingPage = () => {
   const [search, setSearch] = useState('');
   const [showThreadList, setShowThreadList] = useState(true);
   const [newThreadOpen, setNewThreadOpen] = useState(false);
-  const [templateOpen, setTemplateOpen] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState('');
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [selectedContactId, setSelectedContactId] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { loadThreads(); if (isStaff) loadClients(); }, []);
+  useEffect(() => {
+    loadThreads();
+    if (isStaff) loadClients();
+    else loadDoctors();
+  }, []);
 
   useEffect(() => {
     if (!activeThread) return;
@@ -58,11 +63,19 @@ const MessagingPage = () => {
     if (!data) return;
     const enriched = await Promise.all(data.map(async (t: any) => {
       const otherId = t.participant_one === user?.id ? t.participant_two : t.participant_one;
-      const { data: prof } = await db.from('profiles').select('full_name, email').eq('id', otherId).single();
+      const { data: prof } = await db.from('profiles').select('full_name, email, avatar_url').eq('id', otherId).single();
       const { count } = await db.from('messages').select('*', { count: 'exact', head: true })
         .eq('thread_id', t.id).eq('read', false).neq('sender_id', user?.id);
-      const { data: lastMsg } = await db.from('messages').select('content').eq('thread_id', t.id).order('created_at', { ascending: false }).limit(1);
-      return { ...t, otherName: prof?.full_name || 'Unknown', otherEmail: prof?.email, unread: count || 0, lastMessage: lastMsg?.[0]?.content || '' };
+      const { data: lastMsg } = await db.from('messages').select('content, created_at').eq('thread_id', t.id).order('created_at', { ascending: false }).limit(1);
+      return {
+        ...t,
+        otherName: prof?.full_name || prof?.email || 'Unknown User',
+        otherEmail: prof?.email,
+        otherAvatar: prof?.avatar_url,
+        unread: count || 0,
+        lastMessage: lastMsg?.[0]?.content || '',
+        lastMessageTime: lastMsg?.[0]?.created_at,
+      };
     }));
     setThreads(enriched);
   };
@@ -70,6 +83,15 @@ const MessagingPage = () => {
   const loadClients = async () => {
     const { data } = await db.from('clients').select('id, full_name, user_id').eq('status', 'active').order('full_name');
     setClients((data || []).filter((c: any) => c.user_id));
+  };
+
+  const loadDoctors = async () => {
+    // Client loads doctors they can message
+    const { data: roleRows } = await db.from('user_roles').select('user_id').in('role', ['doctor', 'super_admin']);
+    if (!roleRows || roleRows.length === 0) return;
+    const doctorIds = roleRows.map((r: any) => r.user_id);
+    const { data: profiles } = await db.from('profiles').select('id, full_name, email, avatar_url').in('id', doctorIds);
+    setDoctors(profiles || []);
   };
 
   const loadMessages = async (threadId: string) => {
@@ -81,25 +103,57 @@ const MessagingPage = () => {
 
   const sendMessage = async () => {
     if (!newMsg.trim() || !activeThread) return;
-    await db.from('messages').insert({ thread_id: activeThread, sender_id: user?.id, content: newMsg.trim() });
-    await db.from('message_threads').update({ last_message_at: new Date().toISOString() }).eq('id', activeThread);
-    setNewMsg('');
+    try {
+      const { error } = await db.from('messages').insert({ thread_id: activeThread, sender_id: user?.id, content: newMsg.trim() });
+      if (error) throw error;
+      await db.from('message_threads').update({ last_message_at: new Date().toISOString() }).eq('id', activeThread);
+      setNewMsg('');
+
+      // Create notification for recipient
+      const thread = threads.find(t => t.id === activeThread);
+      if (thread) {
+        const recipientId = thread.participant_one === user?.id ? thread.participant_two : thread.participant_one;
+        await db.from('notifications').insert({
+          user_id: recipientId,
+          title: 'New Message',
+          message: `${(await db.from('profiles').select('full_name').eq('id', user?.id).single()).data?.full_name || 'Someone'} sent you a message`,
+          type: 'info',
+          link: '/dashboard/messages',
+        });
+      }
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+    }
   };
 
   const createThread = async () => {
-    if (!selectedClientId) { toast({ title: "Select a client", variant: "destructive" }); return; }
-    const client = clients.find(c => c.id === selectedClientId);
-    if (!client?.user_id) { toast({ title: "Client has no portal account", variant: "destructive" }); return; }
+    let targetUserId: string;
+
+    if (isStaff) {
+      if (!selectedContactId) { toast({ title: "Select a client", variant: "destructive" }); return; }
+      const client = clients.find(c => c.id === selectedContactId);
+      if (!client?.user_id) { toast({ title: "Client has no portal account", variant: "destructive" }); return; }
+      targetUserId = client.user_id;
+    } else {
+      // Client initiating chat with doctor
+      if (!selectedContactId) { toast({ title: "Select your therapist", variant: "destructive" }); return; }
+      targetUserId = selectedContactId;
+    }
+
     // Check existing thread
     const { data: existing } = await db.from('message_threads').select('id')
-      .or(`and(participant_one.eq.${user?.id},participant_two.eq.${client.user_id}),and(participant_one.eq.${client.user_id},participant_two.eq.${user?.id})`);
+      .or(`and(participant_one.eq.${user?.id},participant_two.eq.${targetUserId}),and(participant_one.eq.${targetUserId},participant_two.eq.${user?.id})`);
     if (existing && existing.length > 0) {
       setActiveThread(existing[0].id);
       setShowThreadList(false);
       setNewThreadOpen(false);
       return;
     }
-    const { data: thread } = await db.from('message_threads').insert({ participant_one: user?.id, participant_two: client.user_id }).select().single();
+    const { data: thread, error } = await db.from('message_threads').insert({ participant_one: user?.id, participant_two: targetUserId }).select().single();
+    if (error) {
+      toast({ title: "Failed to create conversation", description: error.message, variant: "destructive" });
+      return;
+    }
     if (thread) {
       setActiveThread(thread.id);
       setShowThreadList(false);
@@ -110,7 +164,6 @@ const MessagingPage = () => {
 
   const useTemplate = (text: string) => {
     setNewMsg(text);
-    setTemplateOpen(false);
   };
 
   const deleteMessage = async (msgId: string) => {
@@ -133,24 +186,42 @@ const MessagingPage = () => {
           <h1 className="text-2xl font-heading font-bold">Messages</h1>
           {totalUnread > 0 && <p className="text-sm text-primary font-medium">{totalUnread} unread</p>}
         </div>
-        {isStaff && (
-          <Dialog open={newThreadOpen} onOpenChange={setNewThreadOpen}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="h-3.5 w-3.5 mr-1.5" /> New Chat</Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Start Conversation</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div><Label>Select Client</Label>
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+        {/* Both staff AND clients can start chats */}
+        <Dialog open={newThreadOpen} onOpenChange={setNewThreadOpen}>
+          <DialogTrigger asChild><Button size="sm"><Plus className="h-3.5 w-3.5 mr-1.5" /> New Chat</Button></DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>{isStaff ? 'Message a Client' : 'Message Your Therapist'}</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              {isStaff ? (
+                <div>
+                  <Label>Select Client</Label>
+                  <Select value={selectedContactId} onValueChange={setSelectedContactId}>
                     <SelectTrigger><SelectValue placeholder="Choose a client..." /></SelectTrigger>
-                    <SelectContent>{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}</SelectContent>
+                    <SelectContent>
+                      {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
+                    </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">Only clients with portal accounts are shown</p>
                 </div>
-                <Button onClick={createThread} className="w-full">Start Chat</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              ) : (
+                <div>
+                  <Label>Select Therapist</Label>
+                  {doctors.length === 0 ? (
+                    <p className="text-sm text-muted-foreground mt-2">No therapists available</p>
+                  ) : (
+                    <Select value={selectedContactId} onValueChange={setSelectedContactId}>
+                      <SelectTrigger><SelectValue placeholder="Choose your therapist..." /></SelectTrigger>
+                      <SelectContent>
+                        {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.full_name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+              <Button onClick={createThread} className="w-full">Start Chat</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex gap-4 h-[calc(100vh-12rem)]">
@@ -167,21 +238,25 @@ const MessagingPage = () => {
               <div className="text-center py-12">
                 <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-xs text-muted-foreground">No conversations</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Start a new chat to begin</p>
               </div>
             ) : threads.filter(t => t.otherName?.toLowerCase().includes(search.toLowerCase())).map(t => (
               <button key={t.id} onClick={() => { setActiveThread(t.id); setShowThreadList(false); }}
                 className={`w-full text-left p-3 border-b transition-colors ${activeThread === t.id ? 'bg-primary/10' : 'hover:bg-muted/50'}`}>
                 <div className="flex items-center gap-2">
-                  <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${t.unread > 0 ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}>
-                    {t.otherName?.charAt(0)?.toUpperCase()}
-                  </div>
+                  <Avatar className={`h-9 w-9 flex-shrink-0 ${t.unread > 0 ? 'ring-2 ring-primary' : ''}`}>
+                    {t.otherAvatar && <AvatarImage src={t.otherAvatar} />}
+                    <AvatarFallback className={`text-xs font-bold ${t.unread > 0 ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}>
+                      {t.otherName?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className={`text-sm truncate ${t.unread > 0 ? 'font-bold' : 'font-medium'}`}>{t.otherName}</p>
                       {t.unread > 0 && <Badge variant="destructive" className="text-[10px] h-4 min-w-4 px-1 ml-1">{t.unread}</Badge>}
                     </div>
                     <p className="text-[10px] text-muted-foreground truncate">{t.lastMessage || 'No messages yet'}</p>
-                    {t.last_message_at && <p className="text-[10px] text-muted-foreground/60">{formatDistanceToNow(parseISO(t.last_message_at), { addSuffix: true })}</p>}
+                    {t.lastMessageTime && <p className="text-[10px] text-muted-foreground/60">{formatDistanceToNow(parseISO(t.lastMessageTime), { addSuffix: true })}</p>}
                   </div>
                 </div>
               </button>
@@ -205,9 +280,12 @@ const MessagingPage = () => {
                 <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" onClick={() => { setActiveThread(null); setShowThreadList(true); }}>
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-                  {activeThreadData?.otherName?.charAt(0)?.toUpperCase()}
-                </div>
+                <Avatar className="h-8 w-8">
+                  {activeThreadData?.otherAvatar && <AvatarImage src={activeThreadData.otherAvatar} />}
+                  <AvatarFallback className="text-xs font-bold bg-primary/10 text-primary">
+                    {activeThreadData?.otherName?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1">
                   <p className="font-semibold text-sm">{activeThreadData?.otherName}</p>
                   {activeThreadData?.otherEmail && <p className="text-[10px] text-muted-foreground">{activeThreadData.otherEmail}</p>}
@@ -232,7 +310,6 @@ const MessagingPage = () => {
                           </p>
                           {isMine && m.read && <span className="text-[10px] text-primary-foreground/60">✓✓</span>}
                         </div>
-                        {/* Context menu */}
                         <div className="absolute top-1 right-1 hidden group-hover:flex gap-0.5">
                           <button onClick={() => copyMessage(m.content)} className="h-5 w-5 rounded bg-background/20 flex items-center justify-center hover:bg-background/40">
                             <Copy className="h-2.5 w-2.5" />

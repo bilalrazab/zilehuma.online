@@ -12,6 +12,7 @@ import TestimonialNew from "./pages/TestimonialNew";
 import ServicePage from "./pages/ServicePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/unsubscribe" element={<UnsubscribePage />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="clients" element={<ClientsPage />} />
