@@ -144,13 +144,22 @@ const ClientFilePage = () => {
   const addTask = async () => {
     if (!taskForm.title) return;
     await db.from('tasks').insert({ client_id: id, ...taskForm, due_date: taskForm.due_date || null, created_by: user?.id });
-    // Notify client about new task
+    // Notify client about new task + send email
     if (client?.user_id) {
       await db.from('notifications').insert({
         user_id: client.user_id, title: 'New Task Assigned',
         message: `"${taskForm.title}" has been assigned to you`,
         type: 'info', link: '/dashboard/tasks',
       });
+      try {
+        await supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'task-assignment', recipientEmail: client.email,
+            idempotencyKey: `task-assign-${Date.now()}`,
+            templateData: { clientName: client.full_name?.split(' ')[0], taskTitle: taskForm.title, dueDate: taskForm.due_date || undefined, priority: taskForm.priority },
+          },
+        });
+      } catch (err) { console.error('Email send error:', err); }
     }
     setTaskOpen(false); setTaskForm({ title: '', type: 'follow_up', due_date: '', priority: 'medium', notes: '' });
     toast({ title: "Task created" }); load();
