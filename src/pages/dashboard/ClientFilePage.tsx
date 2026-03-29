@@ -144,6 +144,14 @@ const ClientFilePage = () => {
   const addTask = async () => {
     if (!taskForm.title) return;
     await db.from('tasks').insert({ client_id: id, ...taskForm, due_date: taskForm.due_date || null, created_by: user?.id });
+    // Notify client about new task
+    if (client?.user_id) {
+      await db.from('notifications').insert({
+        user_id: client.user_id, title: 'New Task Assigned',
+        message: `"${taskForm.title}" has been assigned to you`,
+        type: 'info', link: '/dashboard/tasks',
+      });
+    }
     setTaskOpen(false); setTaskForm({ title: '', type: 'follow_up', due_date: '', priority: 'medium', notes: '' });
     toast({ title: "Task created" }); load();
   };
