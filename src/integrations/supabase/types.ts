@@ -19,6 +19,7 @@ export type Database = {
           client_id: string
           created_at: string
           doctor_id: string
+          duration_minutes: number | null
           end_time: string
           id: string
           meeting_link: string | null
@@ -33,6 +34,7 @@ export type Database = {
           client_id: string
           created_at?: string
           doctor_id: string
+          duration_minutes?: number | null
           end_time: string
           id?: string
           meeting_link?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           doctor_id?: string
+          duration_minutes?: number | null
           end_time?: string
           id?: string
           meeting_link?: string | null
@@ -139,6 +142,53 @@ export type Database = {
         }
         Relationships: []
       }
+      client_checklists: {
+        Row: {
+          case_closed: boolean | null
+          client_id: string
+          consent_signed: boolean | null
+          first_session_done: boolean | null
+          follow_up_sent: boolean | null
+          id: string
+          intake_completed: boolean | null
+          progress_reviewed: boolean | null
+          treatment_plan_created: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          case_closed?: boolean | null
+          client_id: string
+          consent_signed?: boolean | null
+          first_session_done?: boolean | null
+          follow_up_sent?: boolean | null
+          id?: string
+          intake_completed?: boolean | null
+          progress_reviewed?: boolean | null
+          treatment_plan_created?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          case_closed?: boolean | null
+          client_id?: string
+          consent_signed?: boolean | null
+          first_session_done?: boolean | null
+          follow_up_sent?: boolean | null
+          id?: string
+          intake_completed?: boolean | null
+          progress_reviewed?: boolean | null
+          treatment_plan_created?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_checklists_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -151,8 +201,12 @@ export type Database = {
           full_name: string
           gender: string | null
           id: string
+          last_session_date: string | null
+          next_session_date: string | null
           notes: string | null
           phone: string | null
+          pipeline_stage: string | null
+          risk_level: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -168,8 +222,12 @@ export type Database = {
           full_name: string
           gender?: string | null
           id?: string
+          last_session_date?: string | null
+          next_session_date?: string | null
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
+          risk_level?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -185,8 +243,12 @@ export type Database = {
           full_name?: string
           gender?: string | null
           id?: string
+          last_session_date?: string | null
+          next_session_date?: string | null
           notes?: string | null
           phone?: string | null
+          pipeline_stage?: string | null
+          risk_level?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -222,6 +284,88 @@ export type Database = {
           start_time?: string
         }
         Relationships: []
+      }
+      forms: {
+        Row: {
+          client_id: string
+          completed_at: string | null
+          content: Json | null
+          created_at: string
+          id: string
+          status: string
+          title: string
+          type: string
+        }
+        Insert: {
+          client_id: string
+          completed_at?: string | null
+          content?: Json | null
+          created_at?: string
+          id?: string
+          status?: string
+          title: string
+          type?: string
+        }
+        Update: {
+          client_id?: string
+          completed_at?: string | null
+          content?: Json | null
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forms_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_threads: {
         Row: {
@@ -339,6 +483,57 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          method: string | null
+          notes: string | null
+          payment_date: string | null
+          session_id: string | null
+          status: string
+        }
+        Insert: {
+          amount?: number
+          client_id: string
+          created_at?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          session_id?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          payment_date?: string | null
+          session_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -374,22 +569,34 @@ export type Database = {
           assigned_at: string
           assigned_by: string | null
           client_id: string
+          completed_at: string | null
+          due_date: string | null
           id: string
           resource_id: string
+          response: string | null
+          status: string | null
         }
         Insert: {
           assigned_at?: string
           assigned_by?: string | null
           client_id: string
+          completed_at?: string | null
+          due_date?: string | null
           id?: string
           resource_id: string
+          response?: string | null
+          status?: string | null
         }
         Update: {
           assigned_at?: string
           assigned_by?: string | null
           client_id?: string
+          completed_at?: string | null
+          due_date?: string | null
           id?: string
           resource_id?: string
+          response?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -498,6 +705,59 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          client_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       testimonials: {
         Row: {
           avatar: string | null
@@ -533,6 +793,44 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
+      }
+      timeline_logs: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          reference_id: string | null
+          type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          reference_id?: string | null
+          type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          reference_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timeline_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_plans: {
         Row: {
