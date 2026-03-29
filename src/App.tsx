@@ -13,6 +13,7 @@ import ServicePage from "./pages/ServicePage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import ClientsPage from "./pages/dashboard/ClientsPage";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/services/:slug" element={<ServicePage />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="clients" element={<ClientsPage />} />
