@@ -28,7 +28,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = async (userId: string, email: string, fullName?: string) => {
     try {
-      const { data: roleData } = await (supabase as any).from('user_roles').select('role').eq('user_id', userId).single();
+      const { data: roleRows } = await (supabase as any).from('user_roles').select('role').eq('user_id', userId);
+      const roleData = roleRows?.find((r: any) => r.role === 'super_admin' || r.role === 'doctor') || roleRows?.[0] || null;
       setRole(roleData?.role || null);
 
       let { data: profileData } = await (supabase as any).from('profiles').select('*').eq('id', userId).single();

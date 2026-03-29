@@ -32,11 +32,11 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { data: roleData } = await supabaseAdmin
+    const { data: roleRows } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', caller.id)
-      .single()
+    const roleData = roleRows?.find((r: any) => r.role === 'super_admin' || r.role === 'doctor') || roleRows?.[0] || null
 
     if (!roleData || !['doctor', 'super_admin'].includes(roleData.role)) {
       return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
