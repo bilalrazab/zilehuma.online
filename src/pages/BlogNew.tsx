@@ -45,14 +45,9 @@ const BlogNew = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
-    setShowPassword(true);
-  };
-
-  const handlePasswordSuccess = async () => {
-    setShowPassword(false);
     await savePost(form);
     toast.success("Post published!");
     navigate("/blog");
