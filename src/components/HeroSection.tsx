@@ -17,7 +17,7 @@ const SWEEP_COLORS = ['#E8B84B', '#E89D3E', '#D4783A', '#C75B8F', '#B04A9B'];
 
 const getCharColor = (charIndex: number, cursorPos: number): string => {
   const dist = charIndex - cursorPos;
-  if (dist < -2 || dist > 2) return 'white';
+  if (dist < -2 || dist > 2) return 'hsl(260, 40%, 72%)';
   // Map distance -2..2 to gradient colors
   const idx = dist + 2;
   return SWEEP_COLORS[idx];
