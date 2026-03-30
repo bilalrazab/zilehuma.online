@@ -31,8 +31,8 @@ const HighlightTagline = () => {
     let animFrame: number;
     let start: number | null = null;
     const totalChars = chars.length;
-    const speed = 60; // ms per character
-    const pauseMs = 2000;
+    const speed = 120; // ms per character (halved speed)
+    const pauseMs = 3000;
     const sweepDuration = (totalChars + 6) * speed;
     const cycleDuration = sweepDuration + pauseMs;
 
