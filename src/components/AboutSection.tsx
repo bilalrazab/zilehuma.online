@@ -26,9 +26,9 @@ const AboutSection = () => {
           />
 
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 font-body">
-            I'm Zil-e-Huma Suleman, a Clinical Psychologist based in Islamabad, Pakistan. I hold an
+            I'm Zil-e-Huma Suleman, a Clinical Psychologist practicing from The Plazzo, Gulberg Greens, Islamabad. I hold an
             MS in Clinical Psychology and have gained hands-on experience across
-            hospital, rehabilitation, and therapeutic settings.
+            hospital, rehabilitation, and therapeutic settings — including Military Hospital Rawalpindi and specialized rehabilitation centers.
           </p>
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 font-body">
             My practice is rooted in evidence-based therapy, including{" "}

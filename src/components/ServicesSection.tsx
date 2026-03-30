@@ -48,7 +48,14 @@ const ServicesSection = () => {
               </div>
               <h3 className="font-heading font-semibold text-lg text-foreground mb-2">{s.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed flex-1">{s.desc}</p>
-              <span className="text-xs text-primary mt-3 group-hover:underline">Learn more →</span>
+              <span className="text-xs text-primary mt-3 group-hover:underline">
+                {s.slug === "individual-therapy" && "Start your healing journey →"}
+                {s.slug === "anxiety-stress-management" && "Take control of your anxiety →"}
+                {s.slug === "hypnotherapy-sessions" && "Explore hypnotherapy →"}
+                {s.slug === "behavioral-therapy" && "Reshape your thinking →"}
+                {s.slug === "psychological-assessments" && "Get diagnostic clarity →"}
+                {s.slug === "online-counseling" && "Book a virtual session →"}
+              </span>
             </Link>
           ))}
         </div>

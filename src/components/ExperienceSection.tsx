@@ -32,6 +32,7 @@ const ExperienceSection = () => {
                   <span className="text-xs font-body text-muted-foreground tracking-wide">{t.period}</span>
                   <h3 className="font-heading font-semibold text-foreground mt-1">{t.role}</h3>
                   <p className="text-sm text-muted-foreground">{t.place}</p>
+                  <p className="text-xs text-muted-foreground/80 mt-2 leading-relaxed">{t.detail}</p>
                 </div>
               </div>
             ))}
