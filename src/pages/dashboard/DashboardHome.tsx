@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Users, Calendar, CheckSquare, DollarSign, Clock, AlertTriangle,
   ArrowRight, Smile, TrendingUp, Activity, Bell, Plus, UserPlus,
-  Target, BookOpen, MessageSquare, BarChart3, Zap, FileText, Star
+  Target, BookOpen, MessageSquare, BarChart3, Zap, FileText, Star,
+  CheckCircle2, Trash2, XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, parseISO, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday } from "date-fns";
