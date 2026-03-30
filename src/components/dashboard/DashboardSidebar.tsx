@@ -23,6 +23,7 @@ const doctorMenu = [
 const clientMenu = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Sessions", url: "/dashboard/sessions", icon: Clock },
+  { title: "Calendar", url: "/dashboard/calendar", icon: Calendar },
   { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Progress", url: "/dashboard/progress", icon: BarChart3 },

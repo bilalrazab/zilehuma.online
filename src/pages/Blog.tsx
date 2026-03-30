@@ -59,10 +59,6 @@ const Blog = () => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const handleLike = async (id: string) => {
-    await toggleLike(id);
-    await loadPosts();
-  };
 
   const handleDeleteClick = (id: string) => {
     setDeleteTarget(id);
