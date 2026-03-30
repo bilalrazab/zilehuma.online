@@ -17,7 +17,7 @@ const SWEEP_COLORS = ['#E8B84B', '#E89D3E', '#D4783A', '#C75B8F', '#B04A9B'];
 
 const getCharColor = (charIndex: number, cursorPos: number): string => {
   const dist = charIndex - cursorPos;
-  if (dist < -2 || dist > 2) return 'white';
+  if (dist < -2 || dist > 2) return 'hsl(260, 40%, 72%)';
   // Map distance -2..2 to gradient colors
   const idx = dist + 2;
   return SWEEP_COLORS[idx];
@@ -31,8 +31,8 @@ const HighlightTagline = () => {
     let animFrame: number;
     let start: number | null = null;
     const totalChars = chars.length;
-    const speed = 60; // ms per character
-    const pauseMs = 2000;
+    const speed = 120; // ms per character (halved speed)
+    const pauseMs = 3000;
     const sweepDuration = (totalChars + 6) * speed;
     const cycleDuration = sweepDuration + pauseMs;
 
