@@ -67,7 +67,10 @@ const DoctorDashboard = () => {
       unpaid: unpaidRes.count || 0,
       revenue: totalRevenue,
       overdue: overdueRes.data?.length || 0,
+      pendingRequests: (pendingReqRes.data || []).length,
     });
+
+    setPendingRequests(pendingReqRes.data || []);
 
     setTodaySessions(sessionsRes.data || []);
     setOverdueTasks(overdueRes.data || []);
