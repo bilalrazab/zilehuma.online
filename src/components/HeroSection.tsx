@@ -73,7 +73,7 @@ const HighlightTagline = () => {
         <span
           key={i}
           style={{
-            color: getCharColor(i, cursor),
+            color: getCharColor(i, cursor, chars.length),
             transition: 'color 0.15s ease',
           }}
         >
