@@ -23,7 +23,7 @@ const DoctorDashboard = () => {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0 });
+  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0, pendingRequests: 0 });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [upcomingWeek, setUpcomingWeek] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
@@ -33,6 +33,7 @@ const DoctorDashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [recentClients, setRecentClients] = useState<any[]>([]);
   const [tasksByType, setTasksByType] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
 
   useEffect(() => { load(); }, []);
 
