@@ -101,7 +101,7 @@ const HeroSection = () => {
         </p>
         <h1 className="font-heading font-bold mb-4 text-white leading-tight drop-shadow-lg">
           <span className="block text-xl sm:text-2xl lg:text-4xl mb-1">Clinical Psychologist Islamabad</span>
-          <span className="block text-2xl sm:text-3xl lg:text-5xl text-gradient">Your Path to Mental Wellness</span>
+          <HighlightTagline />
         </h1>
         <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-8 max-w-md mx-auto font-body leading-relaxed drop-shadow-md">
           Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.
