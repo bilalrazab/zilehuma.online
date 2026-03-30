@@ -98,11 +98,13 @@ const Blog = () => {
               <h1 className="section-title !mb-1">Blog</h1>
               <p className="section-subtitle">Insights on mental health, therapy & well-being.</p>
             </div>
-            <Link to="/blog/new">
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" /> Write a Post
-              </Button>
-            </Link>
+            {isStaff && (
+              <Link to="/blog/new">
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" /> Write a Post
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
