@@ -29,6 +29,8 @@ const extractYouTubeId = (url: string): string | null => {
 const BlogPostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isStaff = role === 'doctor' || role === 'super_admin';
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeletePassword, setShowDeletePassword] = useState(false);
