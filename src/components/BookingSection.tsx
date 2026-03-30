@@ -1,7 +1,8 @@
 import { useState, FormEvent } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Button } from "./ui/button";
-import { CalendarDays, Clock, Send } from "lucide-react";
+import { CalendarDays, Clock, Send, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const timeSlots = ["10:00 AM", "11:00 AM", "12:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"];
 const sessionTypes = ["Individual Therapy", "Anxiety & Stress Management", "Hypnotherapy", "Behavioral Therapy", "Psychological Assessment", "Online Counseling"];
