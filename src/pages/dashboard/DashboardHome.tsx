@@ -106,6 +106,42 @@ const DoctorDashboard = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  const approveRequest = async (session: any) => {
+    try {
+      await db.from('appointments').update({ status: 'scheduled' }).eq('id', session.id);
+      if (session.client_id) {
+        const { data: cl } = await db.from('clients').select('user_id, full_name').eq('id', session.client_id).single();
+        if (cl?.user_id) {
+          await db.from('notifications').insert({
+            user_id: cl.user_id, title: 'Session Approved ✅',
+            message: `Your session for ${format(parseISO(session.start_time), 'MMM d, h:mm a')} has been approved.`,
+            type: 'info', link: '/dashboard/sessions',
+          });
+        }
+      }
+      toast({ title: "✅ Session approved" }); load();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const rejectRequest = async (session: any) => {
+    try {
+      await db.from('appointments').update({ status: 'cancelled' }).eq('id', session.id);
+      const { data: cl } = await db.from('clients').select('user_id').eq('id', session.client_id).single();
+      if (cl?.user_id) {
+        await db.from('notifications').insert({
+          user_id: cl.user_id, title: 'Session Request Declined',
+          message: `Your session request for ${format(parseISO(session.start_time), 'MMM d')} was declined. Please try another time.`,
+          type: 'info', link: '/dashboard/sessions',
+        });
+      }
+      toast({ title: "Request declined" }); load();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const COLORS = ['hsl(var(--primary))', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#6b7280', '#ef4444'];
