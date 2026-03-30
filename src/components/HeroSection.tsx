@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { CalendarDays, Sparkles } from "lucide-react";
@@ -10,6 +10,58 @@ const scrollToSection = (id: string) => {
   if (el) {
     el.scrollIntoView({ behavior: "smooth" });
   }
+};
+
+const TAGLINE_WORDS = ["Your", "Path", "to", "Mental", "Wellness"];
+
+const HighlightTagline = () => {
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  const cycle = useCallback(() => {
+    let i = 0;
+    setActiveIndex(0);
+    const interval = setInterval(() => {
+      i++;
+      if (i >= TAGLINE_WORDS.length) {
+        clearInterval(interval);
+        setTimeout(() => setActiveIndex(-1), 600);
+      } else {
+        setActiveIndex(i);
+      }
+    }, 320);
+    return interval;
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      cycle();
+      const loop = setInterval(() => cycle(), TAGLINE_WORDS.length * 320 + 2500);
+      return () => clearInterval(loop);
+    }, 800);
+    return () => clearTimeout(timeout);
+  }, [cycle]);
+
+  return (
+    <span className="block text-2xl sm:text-3xl lg:text-5xl">
+      {TAGLINE_WORDS.map((word, i) => (
+        <span
+          key={i}
+          className="inline-block transition-all duration-300 ease-out mr-[0.3em] last:mr-0"
+          style={{
+            color: activeIndex === i
+              ? 'hsl(var(--primary))'
+              : 'white',
+            textShadow: activeIndex === i
+              ? '0 0 20px hsl(var(--primary) / 0.5)'
+              : '0 2px 8px rgba(0,0,0,0.4)',
+            transform: activeIndex === i ? 'scale(1.08)' : 'scale(1)',
+          }}
+        >
+          {word}
+        </span>
+      ))}
+    </span>
+  );
 };
 
 const HeroSection = () => {
@@ -49,7 +101,7 @@ const HeroSection = () => {
         </p>
         <h1 className="font-heading font-bold mb-4 text-white leading-tight drop-shadow-lg">
           <span className="block text-xl sm:text-2xl lg:text-4xl mb-1">Clinical Psychologist Islamabad</span>
-          <span className="block text-2xl sm:text-3xl lg:text-5xl text-gradient">Your Path to Mental Wellness</span>
+          <HighlightTagline />
         </h1>
         <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-8 max-w-md mx-auto font-body leading-relaxed drop-shadow-md">
           Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.
