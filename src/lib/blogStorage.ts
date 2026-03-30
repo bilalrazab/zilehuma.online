@@ -60,22 +60,7 @@ export async function savePost(post: {
   return data;
 }
 
-export async function toggleLike(id: string): Promise<BlogPost | null> {
-  // Simple increment - no user tracking without auth
-  const post = await getPost(id);
-  if (!post) return null;
-  const { data, error } = await supabase
-    .from("blog_posts")
-    .update({ likes: post.likes + 1 })
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) {
-    console.error("Error toggling like:", error);
-    return null;
-  }
-  return data;
-}
+// Likes are now tracked via the blog_likes table (see BlogPost.tsx)
 
 export async function deletePost(id: string): Promise<void> {
   const { error } = await supabase.from("blog_posts").delete().eq("id", id);

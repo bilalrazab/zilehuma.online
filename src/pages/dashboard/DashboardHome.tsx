@@ -603,7 +603,7 @@ const ClientPortalHome = () => {
     const { data: clientRow } = await db.from('clients').select('*').eq('user_id', user?.id).single();
     if (!clientRow) return;
     // Redirect to onboarding if profile incomplete
-    if (!clientRow.phone && !clientRow.gender && !clientRow.date_of_birth && !clientRow.emergency_contact) {
+    if (!clientRow.phone || !clientRow.gender || !clientRow.date_of_birth || !clientRow.emergency_contact) {
       navigate('/dashboard/onboarding', { replace: true });
       return;
     }

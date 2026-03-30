@@ -9,11 +9,15 @@ export function verifyTestimonialPassword(password: string): boolean {
   return password === TESTIMONIAL_PASSWORD;
 }
 
-export async function getTestimonials(): Promise<Testimonial[]> {
-  const { data, error } = await supabase
+export async function getTestimonials(approvedOnly = true): Promise<Testimonial[]> {
+  let query = supabase
     .from("testimonials")
     .select("*")
     .order("created_at", { ascending: false });
+  if (approvedOnly) {
+    query = query.eq("approved", true);
+  }
+  const { data, error } = await query;
   if (error) {
     console.error("Error fetching testimonials:", error);
     return [];
