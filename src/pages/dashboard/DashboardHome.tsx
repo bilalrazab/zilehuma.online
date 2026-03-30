@@ -76,6 +76,8 @@ const DoctorDashboard = () => {
     });
 
     setPendingRequests(pendingReqRes.data || []);
+    setPendingTestimonials(testimonialsRes.data || []);
+    setPendingComments(commentsRes.data || []);
 
     setTodaySessions(sessionsRes.data || []);
     setOverdueTasks(overdueRes.data || []);
