@@ -35,6 +35,8 @@ const DoctorDashboard = () => {
   const [recentClients, setRecentClients] = useState<any[]>([]);
   const [tasksByType, setTasksByType] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
+  const [pendingComments, setPendingComments] = useState<any[]>([]);
 
   useEffect(() => { load(); }, []);
 
