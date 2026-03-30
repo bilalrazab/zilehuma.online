@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /testimonial/new
 Disallow: /blog/new
+Disallow: /dashboard/
 
 Sitemap: https://zilehuma.online/sitemap.xml
 
@@ -15,4 +16,16 @@ User-agent: Google-Extended
 Allow: /
 
 User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
 Allow: /
