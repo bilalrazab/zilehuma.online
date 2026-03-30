@@ -70,7 +70,7 @@ const ClientsPage = () => {
   };
 
   const resetInviteForm = () => {
-    setForm({ full_name: '', email: '', phone: '', gender: '', date_of_birth: '', address: '', emergency_contact: '', emergency_phone: '', notes: '' });
+    setForm({ full_name: '', email: '' });
     setInviteState('form');
     setInviteError('');
     setInvitedEmail('');
