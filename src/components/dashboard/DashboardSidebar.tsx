@@ -1,6 +1,6 @@
 import {
   Home, Users, CheckSquare, Calendar, BookOpen, MessageSquare,
-  Settings, BarChart3, Clock
+  Settings, BarChart3, Clock, PenLine
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
