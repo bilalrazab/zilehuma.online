@@ -151,9 +151,29 @@ const BlogPostPage = () => {
     return elements;
   };
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt,
+    "image": post.cover_image || "https://zilehuma.online/og-image.png",
+    "author": { "@type": "Person", "name": post.author, "url": "https://zilehuma.online" },
+    "publisher": { "@type": "Organization", "name": "Zil-e-Huma Suleman", "url": "https://zilehuma.online" },
+    "datePublished": post.created_at,
+    "dateModified": post.created_at,
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `https://zilehuma.online/blog/${post.id}` },
+    "wordCount": post.content.split(/\s+/).length,
+    "articleSection": post.tag,
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["article h1", "article header p"]
+    }
+  };
+
   return (
     <>
       <Navbar />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <PasswordDialog open={showDeletePassword} onClose={() => setShowDeletePassword(false)} onSuccess={handleDeleteConfirm} action="delete this post" />
       <main className="min-h-screen pt-24 pb-12">
         <article className="max-w-3xl mx-auto px-4 sm:px-6">
