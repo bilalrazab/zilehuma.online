@@ -15,10 +15,17 @@ const scrollToSection = (id: string) => {
 const TAGLINE = "Your Path to Mental Wellness";
 const SWEEP_COLORS = ['#E8B84B', '#E89D3E', '#D4783A', '#C75B8F', '#B04A9B'];
 
-const getCharColor = (charIndex: number, cursorPos: number): string => {
+const getCharColor = (charIndex: number, cursorPos: number, totalChars: number): string => {
   const dist = charIndex - cursorPos;
-  if (dist < -2 || dist > 2) return 'hsl(260, 40%, 72%)';
-  // Map distance -2..2 to gradient colors
+  if (dist < -2 || dist > 2) {
+    // Sage-to-lavender gradient based on position in text
+    const t = totalChars > 1 ? charIndex / (totalChars - 1) : 0;
+    // Interpolate from sage (hsl 152,30%,62%) to lavender (hsl 260,40%,72%)
+    const h = 152 + t * (260 - 152);
+    const s = 30 + t * (40 - 30);
+    const l = 62 + t * (72 - 62);
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
   const idx = dist + 2;
   return SWEEP_COLORS[idx];
 };
@@ -66,7 +73,7 @@ const HighlightTagline = () => {
         <span
           key={i}
           style={{
-            color: getCharColor(i, cursor),
+            color: getCharColor(i, cursor, chars.length),
             transition: 'color 0.15s ease',
           }}
         >
