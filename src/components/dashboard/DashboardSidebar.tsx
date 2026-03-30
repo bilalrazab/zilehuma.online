@@ -27,6 +27,7 @@ const clientMenu = [
   { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Progress", url: "/dashboard/progress", icon: BarChart3 },
+  { title: "Write Review", url: "/testimonial/new", icon: PenLine },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 

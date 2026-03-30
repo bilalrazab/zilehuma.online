@@ -209,6 +209,14 @@ const TestimonialsSection = () => {
             ))}
           </div>
         )}
+
+        <div className="text-center mt-8">
+          <Link to="/testimonial/new">
+            <Button variant="outline" className="gap-2">
+              <PenLine className="w-4 h-4" /> Share Your Experience
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );
