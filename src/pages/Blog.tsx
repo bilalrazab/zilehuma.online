@@ -13,6 +13,8 @@ import PasswordDialog from "@/components/PasswordDialog";
 const TAGS = ["All", "Mental Health", "Therapy", "Hypnotherapy", "Self-Care", "Relationships", "Wellness"];
 
 const Blog = () => {
+  const { role } = useAuth();
+  const isStaff = role === 'doctor' || role === 'super_admin';
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState("All");
