@@ -61,6 +61,7 @@ const App = () => (
               <Route path="messages" element={<MessagingPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="onboarding" element={<ClientOnboarding />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
