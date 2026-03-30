@@ -49,6 +49,10 @@ const SettingsPage = () => {
   // Export
   const [exporting, setExporting] = useState(false);
 
+  // Approval management
+  const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
+  const [pendingComments, setPendingComments] = useState<any[]>([]);
+
   useEffect(() => {
     if (isStaff) loadAvailability();
     // Load notification preferences from localStorage
