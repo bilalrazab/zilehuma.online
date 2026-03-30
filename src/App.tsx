@@ -28,6 +28,7 @@ import MessagingPage from "./pages/dashboard/MessagingPage";
 import ResourcesPage from "./pages/dashboard/ResourcesPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import ClientOnboarding from "./pages/dashboard/ClientOnboarding";
+import BookPage from "./pages/BookPage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/unsubscribe" element={<UnsubscribePage />} />
+            <Route path="/book" element={<BookPage />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="clients" element={<ClientsPage />} />

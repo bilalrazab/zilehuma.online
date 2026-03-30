@@ -13,3 +13,7 @@ project_id = "stdchygflgjzxpteizcw"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.external-booking]
+    verify_jwt = false
+  [functions.google-calendar-sync]
+    verify_jwt = true
