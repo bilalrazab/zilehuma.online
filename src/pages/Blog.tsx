@@ -157,9 +157,11 @@ const Blog = () => {
                         <MessageCircle className="w-3.5 h-3.5" />
                         {commentCounts[post.id] || 0}
                       </span>
-                      <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {isStaff && (
+                        <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                     <Link to={`/blog/${post.id}`} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body" aria-label={`Read full article: ${post.title}`}>
                       Read <ArrowRight className="w-3 h-3" />
