@@ -386,7 +386,7 @@ const ServicePage = () => {
                   aria-label={`Learn more about ${rs.title}`}
                 >
                   <h3 className="font-heading font-semibold text-foreground text-sm">{rs.title}</h3>
-                  <span className="text-xs text-primary mt-1 inline-block">Learn more →</span>
+                  <span className="text-xs text-primary mt-1 inline-block">Explore this service →</span>
                 </Link>
               ))}
             </div>
