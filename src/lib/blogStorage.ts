@@ -3,11 +3,7 @@ import type { Tables } from "@/integrations/supabase/types";
 
 export type BlogPost = Tables<"blog_posts">;
 
-const BLOG_PASSWORD = "Tddua@2026";
-
-export function verifyPassword(password: string): boolean {
-  return password === BLOG_PASSWORD;
-}
+// Password verification removed — blog management is now protected by RLS (staff-only policies)
 
 export async function getPosts(): Promise<BlogPost[]> {
   const { data, error } = await supabase

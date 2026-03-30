@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { savePost, verifyPassword } from "@/lib/blogStorage";
+import { savePost } from "@/lib/blogStorage";
 import { ArrowLeft, Send, Eye, Edit3, ImagePlus, Youtube, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,14 +45,9 @@ const BlogNew = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
-    setShowPassword(true);
-  };
-
-  const handlePasswordSuccess = async () => {
-    setShowPassword(false);
     await savePost(form);
     toast.success("Post published!");
     navigate("/blog");
@@ -93,12 +88,6 @@ const BlogNew = () => {
   return (
     <>
       <Navbar />
-      <PasswordDialog
-        open={showPassword}
-        onClose={() => setShowPassword(false)}
-        onSuccess={handlePasswordSuccess}
-        action="publish this post"
-      />
       <main className="min-h-screen pt-24 pb-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-6 transition-colors">
