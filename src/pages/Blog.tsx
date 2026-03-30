@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPosts, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
