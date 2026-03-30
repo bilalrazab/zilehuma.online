@@ -230,40 +230,6 @@ const ClientsPage = () => {
                     <Label className="text-xs font-medium">Email <span className="text-destructive">*</span></Label>
                     <Input type="email" placeholder="client@email.com" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setInviteError(''); }} disabled={inviteState === 'sending'} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs font-medium">Phone</Label>
-                      <Input placeholder="+92..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Gender</Label>
-                      <Input placeholder="Male / Female" value={form.gender} onChange={e => setForm(p => ({ ...p, gender: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs font-medium">Date of Birth</Label>
-                      <Input type="date" value={form.date_of_birth} onChange={e => setForm(p => ({ ...p, date_of_birth: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Address</Label>
-                      <Input placeholder="City" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs font-medium">Emergency Contact</Label>
-                      <Input placeholder="Name" value={form.emergency_contact} onChange={e => setForm(p => ({ ...p, emergency_contact: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium">Emergency Phone</Label>
-                      <Input placeholder="+92..." value={form.emergency_phone} onChange={e => setForm(p => ({ ...p, emergency_phone: e.target.value }))} disabled={inviteState === 'sending'} />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs font-medium">Notes</Label>
-                    <Textarea placeholder="Initial notes, referral source, concerns..." value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} disabled={inviteState === 'sending'} />
-                  </div>
                 </div>
 
                 <Button onClick={handleInvite} disabled={inviteState === 'sending'} className="w-full">
