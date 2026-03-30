@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { savePost, verifyPassword } from "@/lib/blogStorage";
+import { savePost } from "@/lib/blogStorage";
 import { ArrowLeft, Send, Eye, Edit3, ImagePlus, Youtube, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
