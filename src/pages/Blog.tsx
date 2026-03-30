@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPosts, toggleLike, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
-import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag } from "lucide-react";
+import { getPosts, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
