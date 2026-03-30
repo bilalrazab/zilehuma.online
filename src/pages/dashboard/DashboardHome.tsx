@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Users, Calendar, CheckSquare, DollarSign, Clock, AlertTriangle,
   ArrowRight, Smile, TrendingUp, Activity, Bell, Plus, UserPlus,
-  Target, BookOpen, MessageSquare, BarChart3, Zap, FileText, Star
+  Target, BookOpen, MessageSquare, BarChart3, Zap, FileText, Star,
+  CheckCircle2, Trash2, XCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, parseISO, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday } from "date-fns";
@@ -34,6 +35,8 @@ const DoctorDashboard = () => {
   const [recentClients, setRecentClients] = useState<any[]>([]);
   const [tasksByType, setTasksByType] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
+  const [pendingComments, setPendingComments] = useState<any[]>([]);
 
   useEffect(() => { load(); }, []);
 
@@ -42,7 +45,7 @@ const DoctorDashboard = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
 
-    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes] = await Promise.all([
+    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes, testimonialsRes, commentsRes] = await Promise.all([
       db.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       db.from('appointments').select('*, clients(full_name)').gte('start_time', today + 'T00:00:00').lte('start_time', today + 'T23:59:59').order('start_time'),
       db.from('tasks').select('*, clients(full_name)').eq('status', 'pending').lte('due_date', today).order('priority'),
@@ -56,6 +59,8 @@ const DoctorDashboard = () => {
       db.from('tasks').select('type, status'),
       db.from('timeline_logs').select('*, clients:client_id(full_name)').order('created_at', { ascending: false }).limit(15),
       db.from('appointments').select('*, clients(full_name, email)').eq('status', 'pending_approval').order('start_time'),
+      db.from('testimonials').select('*').eq('approved', false).order('created_at', { ascending: false }),
+      db.from('blog_comments').select('*').eq('approved', false).order('created_at', { ascending: false }),
     ]);
 
     const totalRevenue = (paymentsRes.data || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
@@ -71,6 +76,8 @@ const DoctorDashboard = () => {
     });
 
     setPendingRequests(pendingReqRes.data || []);
+    setPendingTestimonials(testimonialsRes.data || []);
+    setPendingComments(commentsRes.data || []);
 
     setTodaySessions(sessionsRes.data || []);
     setOverdueTasks(overdueRes.data || []);
@@ -140,6 +147,23 @@ const DoctorDashboard = () => {
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
+  };
+
+  const approveTestimonial = async (id: string) => {
+    await db.from('testimonials').update({ approved: true }).eq('id', id);
+    toast({ title: "Testimonial approved ✓" }); load();
+  };
+  const deleteTestimonial = async (id: string) => {
+    await db.from('testimonials').delete().eq('id', id);
+    toast({ title: "Testimonial removed" }); load();
+  };
+  const approveComment = async (id: string) => {
+    await db.from('blog_comments').update({ approved: true }).eq('id', id);
+    toast({ title: "Comment approved ✓" }); load();
+  };
+  const deleteComment = async (id: string) => {
+    await db.from('blog_comments').delete().eq('id', id);
+    toast({ title: "Comment removed" }); load();
   };
 
   const hour = new Date().getHours();
@@ -287,6 +311,66 @@ const DoctorDashboard = () => {
                 <div className="flex gap-1.5">
                   <Button size="sm" className="h-7 text-xs" onClick={() => approveRequest(r)}>Approve</Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => rejectRequest(r)}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Testimonial Approvals */}
+      {pendingTestimonials.length > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" /> {pendingTestimonials.length} Pending Testimonial{pendingTestimonials.length > 1 ? 's' : ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingTestimonials.map(t => (
+              <div key={t.id} className="p-3 rounded-lg bg-background border space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role} {t.location && `· ${t.location}`}</p>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: t.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2">{t.text}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveTestimonial(t.id)}><CheckCircle2 className="h-3 w-3 mr-1" /> Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteTestimonial(t.id)}><Trash2 className="h-3 w-3 mr-1" /> Remove</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Blog Comment Approvals */}
+      {pendingComments.length > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-blue-500" /> {pendingComments.length} Pending Comment{pendingComments.length > 1 ? 's' : ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingComments.map(c => (
+              <div key={c.id} className="p-3 rounded-lg bg-background border space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{c.author_name?.charAt(0)?.toUpperCase() || '?'}</div>
+                  <div>
+                    <p className="text-sm font-medium">{c.author_name}</p>
+                    <p className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2">{c.content}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveComment(c.id)}><CheckCircle2 className="h-3 w-3 mr-1" /> Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteComment(c.id)}><Trash2 className="h-3 w-3 mr-1" /> Remove</Button>
                 </div>
               </div>
             ))}
@@ -516,8 +600,13 @@ const ClientPortalHome = () => {
   useEffect(() => { load(); }, []);
 
   const load = async () => {
-    const { data: clientRow } = await db.from('clients').select('id').eq('user_id', user?.id).single();
+    const { data: clientRow } = await db.from('clients').select('*').eq('user_id', user?.id).single();
     if (!clientRow) return;
+    // Redirect to onboarding if profile incomplete
+    if (!clientRow.phone && !clientRow.gender && !clientRow.date_of_birth && !clientRow.emergency_contact) {
+      navigate('/dashboard/onboarding', { replace: true });
+      return;
+    }
     const cid = clientRow.id;
     const now = new Date().toISOString();
 

@@ -27,6 +27,7 @@ import ClientProgressPage from "./pages/dashboard/ClientProgressPage";
 import MessagingPage from "./pages/dashboard/MessagingPage";
 import ResourcesPage from "./pages/dashboard/ResourcesPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import ClientOnboarding from "./pages/dashboard/ClientOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="messages" element={<MessagingPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="onboarding" element={<ClientOnboarding />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
