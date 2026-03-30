@@ -100,6 +100,60 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_comments: {
+        Row: {
+          approved: boolean
+          author_email: string | null
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string | null
+        }
+        Insert: {
+          approved?: boolean
+          author_email?: string | null
+          author_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id?: string | null
+        }
+        Update: {
+          approved?: boolean
+          author_email?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      blog_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
@@ -871,6 +925,7 @@ export type Database = {
       }
       testimonials: {
         Row: {
+          approved: boolean
           avatar: string | null
           created_at: string
           id: string
@@ -882,6 +937,7 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          approved?: boolean
           avatar?: string | null
           created_at?: string
           id?: string
@@ -893,6 +949,7 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          approved?: boolean
           avatar?: string | null
           created_at?: string
           id?: string

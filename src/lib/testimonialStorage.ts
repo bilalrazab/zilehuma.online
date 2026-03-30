@@ -36,6 +36,7 @@ export async function saveTestimonial(testimonial: {
       avatar: testimonial.avatar || "",
       location: testimonial.location || "",
       verified: true,
+      approved: false,
     })
     .select()
     .single();
