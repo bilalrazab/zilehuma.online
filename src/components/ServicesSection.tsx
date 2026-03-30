@@ -52,6 +52,29 @@ const ServicesSection = () => {
             </Link>
           ))}
         </div>
+
+        {/* Structured comparison table for SEO/AI visibility */}
+        <div className="max-w-4xl mx-auto mt-12 overflow-x-auto">
+          <h3 className="font-heading font-semibold text-lg text-foreground mb-4 text-center">Service Comparison</h3>
+          <table className="w-full text-sm border border-border rounded-xl overflow-hidden">
+            <thead>
+              <tr className="bg-muted">
+                <th className="text-left px-4 py-3 font-semibold text-foreground">Service</th>
+                <th className="text-center px-4 py-3 font-semibold text-foreground">Format</th>
+                <th className="text-center px-4 py-3 font-semibold text-foreground">Duration</th>
+                <th className="text-center px-4 py-3 font-semibold text-foreground">Best For</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              <tr><td className="px-4 py-3 text-foreground font-medium">Individual Therapy</td><td className="px-4 py-3 text-center text-muted-foreground">In-person / Online</td><td className="px-4 py-3 text-center text-muted-foreground">45–60 min</td><td className="px-4 py-3 text-center text-muted-foreground">Anxiety, Depression, Growth</td></tr>
+              <tr><td className="px-4 py-3 text-foreground font-medium">Anxiety & Stress Management</td><td className="px-4 py-3 text-center text-muted-foreground">In-person / Online</td><td className="px-4 py-3 text-center text-muted-foreground">45–60 min</td><td className="px-4 py-3 text-center text-muted-foreground">Panic, Stress, Overwhelm</td></tr>
+              <tr><td className="px-4 py-3 text-foreground font-medium">Hypnotherapy</td><td className="px-4 py-3 text-center text-muted-foreground">In-person</td><td className="px-4 py-3 text-center text-muted-foreground">60 min</td><td className="px-4 py-3 text-center text-muted-foreground">Phobias, Habits, Blocks</td></tr>
+              <tr><td className="px-4 py-3 text-foreground font-medium">Behavioral Therapy (CBT)</td><td className="px-4 py-3 text-center text-muted-foreground">In-person / Online</td><td className="px-4 py-3 text-center text-muted-foreground">45–60 min</td><td className="px-4 py-3 text-center text-muted-foreground">Thought Patterns, Habits</td></tr>
+              <tr><td className="px-4 py-3 text-foreground font-medium">Psychological Assessments</td><td className="px-4 py-3 text-center text-muted-foreground">In-person</td><td className="px-4 py-3 text-center text-muted-foreground">60–90 min</td><td className="px-4 py-3 text-center text-muted-foreground">Diagnosis, Treatment Plan</td></tr>
+              <tr><td className="px-4 py-3 text-foreground font-medium">Online Counseling</td><td className="px-4 py-3 text-center text-muted-foreground">Online only</td><td className="px-4 py-3 text-center text-muted-foreground">45–60 min</td><td className="px-4 py-3 text-center text-muted-foreground">Remote Access, Convenience</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
