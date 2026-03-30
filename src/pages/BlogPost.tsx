@@ -178,9 +178,11 @@ const BlogPostPage = () => {
               <span className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MessageCircle className="w-4 h-4" /> {comments.length} comments
               </span>
-              <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
-                <Trash2 className="w-4 h-4" /> Delete
-              </Button>
+              {isStaff && (
+                <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
+                  <Trash2 className="w-4 h-4" /> Delete
+                </Button>
+              )}
             </div>
             <SocialShare url={window.location.href} title={post.title} excerpt={post.excerpt} />
           </div>
