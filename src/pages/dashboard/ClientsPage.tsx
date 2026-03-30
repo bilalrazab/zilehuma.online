@@ -51,8 +51,7 @@ const ClientsPage = () => {
   const [invitedEmail, setInvitedEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    full_name: '', email: '', phone: '', gender: '', date_of_birth: '',
-    address: '', emergency_contact: '', emergency_phone: '', notes: ''
+    full_name: '', email: ''
   });
 
   useEffect(() => { load(); }, []);
