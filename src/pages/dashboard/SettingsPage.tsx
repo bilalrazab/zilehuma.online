@@ -49,53 +49,16 @@ const SettingsPage = () => {
   // Export
   const [exporting, setExporting] = useState(false);
 
-  // Approval management
-  const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
-  const [pendingComments, setPendingComments] = useState<any[]>([]);
 
   useEffect(() => {
     if (isStaff) {
       loadAvailability();
-      loadPendingApprovals();
     }
     setEmailNotifs(localStorage.getItem('pref_email_notifs') !== 'false');
     setTaskReminders(localStorage.getItem('pref_task_reminders') !== 'false');
     setSessionReminders(localStorage.getItem('pref_session_reminders') !== 'false');
     setMessageNotifs(localStorage.getItem('pref_message_notifs') !== 'false');
   }, []);
-
-  const loadPendingApprovals = async () => {
-    const [tRes, cRes] = await Promise.all([
-      db.from('testimonials').select('*').eq('approved', false).order('created_at', { ascending: false }),
-      db.from('blog_comments').select('*').eq('approved', false).order('created_at', { ascending: false }),
-    ]);
-    setPendingTestimonials(tRes.data || []);
-    setPendingComments(cRes.data || []);
-  };
-
-  const approveTestimonial = async (id: string) => {
-    await db.from('testimonials').update({ approved: true }).eq('id', id);
-    toast({ title: "Testimonial approved ✓" });
-    loadPendingApprovals();
-  };
-
-  const deleteTestimonial = async (id: string) => {
-    await db.from('testimonials').delete().eq('id', id);
-    toast({ title: "Testimonial removed" });
-    loadPendingApprovals();
-  };
-
-  const approveComment = async (id: string) => {
-    await db.from('blog_comments').update({ approved: true }).eq('id', id);
-    toast({ title: "Comment approved ✓" });
-    loadPendingApprovals();
-  };
-
-  const deleteComment = async (id: string) => {
-    await db.from('blog_comments').delete().eq('id', id);
-    toast({ title: "Comment removed" });
-    loadPendingApprovals();
-  };
 
   const loadAvailability = async () => {
     const { data } = await db.from('doctor_availability').select('*').eq('doctor_id', user?.id).order('day_of_week');
