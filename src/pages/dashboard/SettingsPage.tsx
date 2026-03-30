@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Lock, Clock, Download, Bell, Shield, Calendar, Camera, Trash2, Mail } from "lucide-react";
+import { User, Lock, Clock, Download, Bell, Shield, Calendar, Camera, Trash2, Mail, Star, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const db = supabase as any;
@@ -49,14 +49,53 @@ const SettingsPage = () => {
   // Export
   const [exporting, setExporting] = useState(false);
 
+  // Approval management
+  const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
+  const [pendingComments, setPendingComments] = useState<any[]>([]);
+
   useEffect(() => {
-    if (isStaff) loadAvailability();
-    // Load notification preferences from localStorage
+    if (isStaff) {
+      loadAvailability();
+      loadPendingApprovals();
+    }
     setEmailNotifs(localStorage.getItem('pref_email_notifs') !== 'false');
     setTaskReminders(localStorage.getItem('pref_task_reminders') !== 'false');
     setSessionReminders(localStorage.getItem('pref_session_reminders') !== 'false');
     setMessageNotifs(localStorage.getItem('pref_message_notifs') !== 'false');
   }, []);
+
+  const loadPendingApprovals = async () => {
+    const [tRes, cRes] = await Promise.all([
+      db.from('testimonials').select('*').eq('approved', false).order('created_at', { ascending: false }),
+      db.from('blog_comments').select('*').eq('approved', false).order('created_at', { ascending: false }),
+    ]);
+    setPendingTestimonials(tRes.data || []);
+    setPendingComments(cRes.data || []);
+  };
+
+  const approveTestimonial = async (id: string) => {
+    await db.from('testimonials').update({ approved: true }).eq('id', id);
+    toast({ title: "Testimonial approved ✓" });
+    loadPendingApprovals();
+  };
+
+  const deleteTestimonial = async (id: string) => {
+    await db.from('testimonials').delete().eq('id', id);
+    toast({ title: "Testimonial removed" });
+    loadPendingApprovals();
+  };
+
+  const approveComment = async (id: string) => {
+    await db.from('blog_comments').update({ approved: true }).eq('id', id);
+    toast({ title: "Comment approved ✓" });
+    loadPendingApprovals();
+  };
+
+  const deleteComment = async (id: string) => {
+    await db.from('blog_comments').delete().eq('id', id);
+    toast({ title: "Comment removed" });
+    loadPendingApprovals();
+  };
 
   const loadAvailability = async () => {
     const { data } = await db.from('doctor_availability').select('*').eq('doctor_id', user?.id).order('day_of_week');
@@ -342,6 +381,90 @@ const SettingsPage = () => {
               ))}
             </div>
             <Button onClick={saveAvailability} disabled={avLoading}>{avLoading ? 'Saving...' : 'Save Availability'}</Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Testimonial Approvals */}
+      {isStaff && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Star className="h-4 w-4" /> Testimonial Approvals
+              {pendingTestimonials.length > 0 && <Badge variant="secondary" className="text-xs">{pendingTestimonials.length} pending</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingTestimonials.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No pending testimonials</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingTestimonials.map(t => (
+                  <div key={t.id} className="p-3 rounded-lg border space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role} {t.location && `· ${t.location}`}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: t.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{t.text}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-7 text-xs" onClick={() => approveTestimonial(t.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteTestimonial(t.id)}>
+                        <Trash2 className="h-3 w-3 mr-1" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Blog Comment Approvals */}
+      {isStaff && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" /> Blog Comment Approvals
+              {pendingComments.length > 0 && <Badge variant="secondary" className="text-xs">{pendingComments.length} pending</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingComments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No pending comments</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingComments.map(c => (
+                  <div key={c.id} className="p-3 rounded-lg border space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        {c.author_name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{c.author_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{c.content}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-7 text-xs" onClick={() => approveComment(c.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteComment(c.id)}>
+                        <Trash2 className="h-3 w-3 mr-1" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

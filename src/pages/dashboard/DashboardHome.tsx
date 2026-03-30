@@ -23,7 +23,7 @@ const DoctorDashboard = () => {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0 });
+  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0, pendingRequests: 0 });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [upcomingWeek, setUpcomingWeek] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
@@ -33,6 +33,7 @@ const DoctorDashboard = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [recentClients, setRecentClients] = useState<any[]>([]);
   const [tasksByType, setTasksByType] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
 
   useEffect(() => { load(); }, []);
 
@@ -41,7 +42,7 @@ const DoctorDashboard = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
 
-    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes] = await Promise.all([
+    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes] = await Promise.all([
       db.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       db.from('appointments').select('*, clients(full_name)').gte('start_time', today + 'T00:00:00').lte('start_time', today + 'T23:59:59').order('start_time'),
       db.from('tasks').select('*, clients(full_name)').eq('status', 'pending').lte('due_date', today).order('priority'),
@@ -54,6 +55,7 @@ const DoctorDashboard = () => {
       db.from('clients').select('*').order('created_at', { ascending: false }).limit(5),
       db.from('tasks').select('type, status'),
       db.from('timeline_logs').select('*, clients:client_id(full_name)').order('created_at', { ascending: false }).limit(15),
+      db.from('appointments').select('*, clients(full_name, email)').eq('status', 'pending_approval').order('start_time'),
     ]);
 
     const totalRevenue = (paymentsRes.data || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
@@ -65,7 +67,10 @@ const DoctorDashboard = () => {
       unpaid: unpaidRes.count || 0,
       revenue: totalRevenue,
       overdue: overdueRes.data?.length || 0,
+      pendingRequests: (pendingReqRes.data || []).length,
     });
+
+    setPendingRequests(pendingReqRes.data || []);
 
     setTodaySessions(sessionsRes.data || []);
     setOverdueTasks(overdueRes.data || []);
@@ -99,6 +104,42 @@ const DoctorDashboard = () => {
   const markNotifRead = async (id: string) => {
     await db.from('notifications').update({ read: true }).eq('id', id);
     setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const approveRequest = async (session: any) => {
+    try {
+      await db.from('appointments').update({ status: 'scheduled' }).eq('id', session.id);
+      if (session.client_id) {
+        const { data: cl } = await db.from('clients').select('user_id, full_name').eq('id', session.client_id).single();
+        if (cl?.user_id) {
+          await db.from('notifications').insert({
+            user_id: cl.user_id, title: 'Session Approved ✅',
+            message: `Your session for ${format(parseISO(session.start_time), 'MMM d, h:mm a')} has been approved.`,
+            type: 'info', link: '/dashboard/sessions',
+          });
+        }
+      }
+      toast({ title: "✅ Session approved" }); load();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const rejectRequest = async (session: any) => {
+    try {
+      await db.from('appointments').update({ status: 'cancelled' }).eq('id', session.id);
+      const { data: cl } = await db.from('clients').select('user_id').eq('id', session.client_id).single();
+      if (cl?.user_id) {
+        await db.from('notifications').insert({
+          user_id: cl.user_id, title: 'Session Request Declined',
+          message: `Your session request for ${format(parseISO(session.start_time), 'MMM d')} was declined. Please try another time.`,
+          type: 'info', link: '/dashboard/sessions',
+        });
+      }
+      toast({ title: "Request declined" }); load();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
   const hour = new Date().getHours();
@@ -216,6 +257,37 @@ const DoctorDashboard = () => {
                   {a.clients?.full_name && <span className="text-muted-foreground">— {a.clients.full_name}</span>}
                 </div>
                 <span className="text-xs text-destructive">{a.due_date}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pending Session Requests */}
+      {pendingRequests.length > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Calendar className="h-4 w-4" /> {pendingRequests.length} Pending Session Request{pendingRequests.length > 1 ? 's' : ''}
+              </CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate('/dashboard/calendar')}>View Calendar <ArrowRight className="h-3 w-3 ml-1" /></Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingRequests.map((r: any) => (
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-background border">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
+                    <span className="capitalize">{r.type}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveRequest(r)}>Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => rejectRequest(r)}>Decline</Button>
+                </div>
               </div>
             ))}
           </CardContent>

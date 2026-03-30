@@ -164,9 +164,37 @@ const CalendarPage = () => {
     try {
       const { data: cr } = await db.from('clients').select('id, doctor_id').eq('user_id', user?.id).single();
       if (!cr) throw new Error('Client record not found');
+
+      // Validate availability
+      const requestDate = new Date(requestForm.preferred_date);
+      const dayOfWeek = (requestDate.getDay() + 6) % 7;
+      if (cr.doctor_id) {
+        const { data: avail } = await db.from('doctor_availability').select('*').eq('doctor_id', cr.doctor_id).eq('day_of_week', dayOfWeek).single();
+        if (avail && !avail.is_available) {
+          toast({ title: "Day unavailable", description: "Your therapist is not available on this day.", variant: "destructive" });
+          setRequestLoading(false); return;
+        }
+        if (avail && (requestForm.preferred_time < avail.start_time || requestForm.preferred_time >= avail.end_time)) {
+          toast({ title: "Outside working hours", description: `Available: ${avail.start_time} – ${avail.end_time}`, variant: "destructive" });
+          setRequestLoading(false); return;
+        }
+      }
+
       const dateTime = `${requestForm.preferred_date}T${requestForm.preferred_time}`;
       const start = new Date(dateTime);
       const end = new Date(start.getTime() + 50 * 60000);
+
+      // Duplicate check
+      const { data: existing } = await db.from('appointments').select('id')
+        .eq('doctor_id', cr.doctor_id || user?.id)
+        .gte('start_time', new Date(start.getTime() - 50 * 60000).toISOString())
+        .lte('start_time', new Date(start.getTime() + 50 * 60000).toISOString())
+        .in('status', ['scheduled', 'pending_approval']);
+      if (existing && existing.length > 0) {
+        toast({ title: "Time slot conflict", description: "This time overlaps with an existing session.", variant: "destructive" });
+        setRequestLoading(false); return;
+      }
+
       const { error } = await db.from('appointments').insert({
         client_id: cr.id, doctor_id: cr.doctor_id || user?.id,
         start_time: start.toISOString(), end_time: end.toISOString(),
@@ -174,7 +202,6 @@ const CalendarPage = () => {
         notes: requestForm.notes || null, status: 'pending_approval',
       });
       if (error) throw error;
-      // Notify doctor
       if (cr.doctor_id) {
         await db.from('notifications').insert({
           user_id: cr.doctor_id, title: 'New Session Request 📅',

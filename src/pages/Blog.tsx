@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getPosts, toggleLike, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
-import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag } from "lucide-react";
+import { getPosts, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
@@ -17,12 +18,29 @@ const Blog = () => {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const perPage = 6;
 
   const loadPosts = async () => {
     const data = await getPosts();
     setPosts(data);
     setLoading(false);
+
+    // Load like counts from blog_likes table
+    const postIds = data.map(p => p.id);
+    if (postIds.length > 0) {
+      const db = supabase as any;
+      const { data: likes } = await db.from('blog_likes').select('post_id');
+      const counts: Record<string, number> = {};
+      (likes || []).forEach((l: any) => { counts[l.post_id] = (counts[l.post_id] || 0) + 1; });
+      setLikeCounts(counts);
+
+      const { data: comments } = await db.from('blog_comments').select('post_id').eq('approved', true);
+      const cCounts: Record<string, number> = {};
+      (comments || []).forEach((c: any) => { cCounts[c.post_id] = (cCounts[c.post_id] || 0) + 1; });
+      setCommentCounts(cCounts);
+    }
   };
 
   useEffect(() => { loadPosts(); }, []);
@@ -41,10 +59,6 @@ const Blog = () => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const handleLike = async (id: string) => {
-    await toggleLike(id);
-    await loadPosts();
-  };
 
   const handleDeleteClick = (id: string) => {
     setDeleteTarget(id);
@@ -130,10 +144,14 @@ const Blog = () => {
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground">{formatDate(post.created_at)}</span>
-                      <button onClick={() => handleLike(post.id)} className="flex items-center gap-1 text-xs transition-colors text-muted-foreground hover:text-destructive">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Heart className="w-3.5 h-3.5" />
-                        {post.likes}
-                      </button>
+                        {likeCounts[post.id] || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        {commentCounts[post.id] || 0}
+                      </span>
                       <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
