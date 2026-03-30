@@ -18,12 +18,29 @@ const Blog = () => {
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const perPage = 6;
 
   const loadPosts = async () => {
     const data = await getPosts();
     setPosts(data);
     setLoading(false);
+
+    // Load like counts from blog_likes table
+    const postIds = data.map(p => p.id);
+    if (postIds.length > 0) {
+      const db = supabase as any;
+      const { data: likes } = await db.from('blog_likes').select('post_id');
+      const counts: Record<string, number> = {};
+      (likes || []).forEach((l: any) => { counts[l.post_id] = (counts[l.post_id] || 0) + 1; });
+      setLikeCounts(counts);
+
+      const { data: comments } = await db.from('blog_comments').select('post_id').eq('approved', true);
+      const cCounts: Record<string, number> = {};
+      (comments || []).forEach((c: any) => { cCounts[c.post_id] = (cCounts[c.post_id] || 0) + 1; });
+      setCommentCounts(cCounts);
+    }
   };
 
   useEffect(() => { loadPosts(); }, []);
