@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PasswordDialog from "@/components/PasswordDialog";
@@ -28,6 +29,8 @@ const extractYouTubeId = (url: string): string | null => {
 const BlogPostPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isStaff = role === 'doctor' || role === 'super_admin';
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeletePassword, setShowDeletePassword] = useState(false);
@@ -175,9 +178,11 @@ const BlogPostPage = () => {
               <span className="flex items-center gap-1 text-sm text-muted-foreground">
                 <MessageCircle className="w-4 h-4" /> {comments.length} comments
               </span>
-              <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
-                <Trash2 className="w-4 h-4" /> Delete
-              </Button>
+              {isStaff && (
+                <Button variant="ghost" size="sm" onClick={() => setShowDeletePassword(true)} className="text-muted-foreground hover:text-destructive gap-1">
+                  <Trash2 className="w-4 h-4" /> Delete
+                </Button>
+              )}
             </div>
             <SocialShare url={window.location.href} title={post.title} excerpt={post.excerpt} />
           </div>

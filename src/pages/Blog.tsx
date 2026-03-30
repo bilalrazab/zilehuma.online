@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPosts, deletePost, verifyPassword, type BlogPost } from "@/lib/blogStorage";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, ArrowRight, Heart, Clock, Search, Plus, Trash2, Tag, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ import PasswordDialog from "@/components/PasswordDialog";
 const TAGS = ["All", "Mental Health", "Therapy", "Hypnotherapy", "Self-Care", "Relationships", "Wellness"];
 
 const Blog = () => {
+  const { role } = useAuth();
+  const isStaff = role === 'doctor' || role === 'super_admin';
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState("All");
@@ -95,11 +98,13 @@ const Blog = () => {
               <h1 className="section-title !mb-1">Blog</h1>
               <p className="section-subtitle">Insights on mental health, therapy & well-being.</p>
             </div>
-            <Link to="/blog/new">
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" /> Write a Post
-              </Button>
-            </Link>
+            {isStaff && (
+              <Link to="/blog/new">
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" /> Write a Post
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -152,9 +157,11 @@ const Blog = () => {
                         <MessageCircle className="w-3.5 h-3.5" />
                         {commentCounts[post.id] || 0}
                       </span>
-                      <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {isStaff && (
+                        <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                     <Link to={`/blog/${post.id}`} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body" aria-label={`Read full article: ${post.title}`}>
                       Read <ArrowRight className="w-3 h-3" />
