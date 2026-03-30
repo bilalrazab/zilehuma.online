@@ -263,6 +263,37 @@ const DoctorDashboard = () => {
         </Card>
       )}
 
+      {/* Pending Session Requests */}
+      {pendingRequests.length > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <Calendar className="h-4 w-4" /> {pendingRequests.length} Pending Session Request{pendingRequests.length > 1 ? 's' : ''}
+              </CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs" onClick={() => navigate('/dashboard/calendar')}>View Calendar <ArrowRight className="h-3 w-3 ml-1" /></Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingRequests.map((r: any) => (
+              <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-background border">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                    <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
+                    <span className="capitalize">{r.type}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveRequest(r)}>Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => rejectRequest(r)}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Charts Row */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Weekly Sessions Chart */}
