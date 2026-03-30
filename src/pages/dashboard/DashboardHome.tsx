@@ -318,6 +318,66 @@ const DoctorDashboard = () => {
         </Card>
       )}
 
+      {/* Testimonial Approvals */}
+      {pendingTestimonials.length > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" /> {pendingTestimonials.length} Pending Testimonial{pendingTestimonials.length > 1 ? 's' : ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingTestimonials.map(t => (
+              <div key={t.id} className="p-3 rounded-lg bg-background border space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role} {t.location && `· ${t.location}`}</p>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: t.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2">{t.text}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveTestimonial(t.id)}><CheckCircle2 className="h-3 w-3 mr-1" /> Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteTestimonial(t.id)}><Trash2 className="h-3 w-3 mr-1" /> Remove</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Blog Comment Approvals */}
+      {pendingComments.length > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-blue-500" /> {pendingComments.length} Pending Comment{pendingComments.length > 1 ? 's' : ''}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingComments.map(c => (
+              <div key={c.id} className="p-3 rounded-lg bg-background border space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{c.author_name?.charAt(0)?.toUpperCase() || '?'}</div>
+                  <div>
+                    <p className="text-sm font-medium">{c.author_name}</p>
+                    <p className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2">{c.content}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" className="h-7 text-xs" onClick={() => approveComment(c.id)}><CheckCircle2 className="h-3 w-3 mr-1" /> Approve</Button>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteComment(c.id)}><Trash2 className="h-3 w-3 mr-1" /> Remove</Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Charts Row */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Weekly Sessions Chart */}
