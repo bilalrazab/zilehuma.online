@@ -149,6 +149,23 @@ const DoctorDashboard = () => {
     }
   };
 
+  const approveTestimonial = async (id: string) => {
+    await db.from('testimonials').update({ approved: true }).eq('id', id);
+    toast({ title: "Testimonial approved ✓" }); load();
+  };
+  const deleteTestimonial = async (id: string) => {
+    await db.from('testimonials').delete().eq('id', id);
+    toast({ title: "Testimonial removed" }); load();
+  };
+  const approveComment = async (id: string) => {
+    await db.from('blog_comments').update({ approved: true }).eq('id', id);
+    toast({ title: "Comment approved ✓" }); load();
+  };
+  const deleteComment = async (id: string) => {
+    await db.from('blog_comments').delete().eq('id', id);
+    toast({ title: "Comment removed" }); load();
+  };
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const COLORS = ['hsl(var(--primary))', '#22c55e', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#6b7280', '#ef4444'];
