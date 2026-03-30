@@ -12,52 +12,65 @@ const scrollToSection = (id: string) => {
   }
 };
 
-const TAGLINE_WORDS = ["Your", "Path", "to", "Mental", "Wellness"];
+const TAGLINE = "Your Path to Mental Wellness";
+const SWEEP_COLORS = ['#E8B84B', '#E89D3E', '#D4783A', '#C75B8F', '#B04A9B'];
+
+const getCharColor = (charIndex: number, cursorPos: number): string => {
+  const dist = charIndex - cursorPos;
+  if (dist < -2 || dist > 2) return 'white';
+  // Map distance -2..2 to gradient colors
+  const idx = dist + 2;
+  return SWEEP_COLORS[idx];
+};
 
 const HighlightTagline = () => {
-  const [activeIndex, setActiveIndex] = useState(-1);
-
-  const cycle = useCallback(() => {
-    let i = 0;
-    setActiveIndex(0);
-    const interval = setInterval(() => {
-      i++;
-      if (i >= TAGLINE_WORDS.length) {
-        clearInterval(interval);
-        setTimeout(() => setActiveIndex(-1), 600);
-      } else {
-        setActiveIndex(i);
-      }
-    }, 320);
-    return interval;
-  }, []);
+  const [cursor, setCursor] = useState(-3);
+  const chars = TAGLINE.split('');
 
   useEffect(() => {
+    let animFrame: number;
+    let start: number | null = null;
+    const totalChars = chars.length;
+    const speed = 60; // ms per character
+    const pauseMs = 2000;
+    const sweepDuration = (totalChars + 6) * speed;
+    const cycleDuration = sweepDuration + pauseMs;
+
+    const animate = (ts: number) => {
+      if (!start) start = ts;
+      const elapsed = (ts - start) % cycleDuration;
+      
+      if (elapsed < sweepDuration) {
+        const pos = Math.floor(elapsed / speed) - 3;
+        setCursor(pos);
+      } else {
+        setCursor(-10); // off screen — all white
+      }
+      animFrame = requestAnimationFrame(animate);
+    };
+
+    // Small initial delay
     const timeout = setTimeout(() => {
-      cycle();
-      const loop = setInterval(() => cycle(), TAGLINE_WORDS.length * 320 + 2500);
-      return () => clearInterval(loop);
-    }, 800);
-    return () => clearTimeout(timeout);
-  }, [cycle]);
+      animFrame = requestAnimationFrame(animate);
+    }, 600);
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(animFrame);
+    };
+  }, [chars.length]);
 
   return (
-    <span className="block text-2xl sm:text-3xl lg:text-5xl">
-      {TAGLINE_WORDS.map((word, i) => (
+    <span className="block text-2xl sm:text-3xl lg:text-5xl text-white">
+      {chars.map((ch, i) => (
         <span
           key={i}
-          className="inline-block transition-all duration-300 ease-out mr-[0.3em] last:mr-0"
           style={{
-            color: activeIndex === i
-              ? 'hsl(var(--primary))'
-              : 'white',
-            textShadow: activeIndex === i
-              ? '0 0 20px hsl(var(--primary) / 0.5)'
-              : '0 2px 8px rgba(0,0,0,0.4)',
-            transform: activeIndex === i ? 'scale(1.08)' : 'scale(1)',
+            color: getCharColor(i, cursor),
+            transition: 'color 0.15s ease',
           }}
         >
-          {word}
+          {ch}
         </span>
       ))}
     </span>
