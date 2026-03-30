@@ -1,6 +1,6 @@
 import {
   Home, Users, CheckSquare, Calendar, BookOpen, MessageSquare,
-  Settings, BarChart3, Clock
+  Settings, BarChart3, Clock, PenLine
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +27,7 @@ const clientMenu = [
   { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
   { title: "Messages", url: "/dashboard/messages", icon: MessageSquare },
   { title: "Progress", url: "/dashboard/progress", icon: BarChart3 },
+  { title: "Write Review", url: "/testimonial/new", icon: PenLine },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
 

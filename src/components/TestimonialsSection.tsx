@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { getTestimonials, type Testimonial } from "@/lib/testimonialStorage";
-import { Star, Quote, ChevronLeft, ChevronRight, MapPin, ShieldCheck } from "lucide-react";
+import { Star, Quote, ChevronLeft, ChevronRight, MapPin, ShieldCheck, PenLine } from "lucide-react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { Button } from "@/components/ui/button";
 
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex gap-0.5">
@@ -207,6 +209,14 @@ const TestimonialsSection = () => {
             ))}
           </div>
         )}
+
+        <div className="text-center mt-8">
+          <Link to="/testimonial/new">
+            <Button variant="outline" className="gap-2">
+              <PenLine className="w-4 h-4" /> Share Your Experience
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );
