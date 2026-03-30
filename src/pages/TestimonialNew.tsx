@@ -1,19 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { verifyTestimonialPassword, saveTestimonial } from "@/lib/testimonialStorage";
+import { saveTestimonial } from "@/lib/testimonialStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, ArrowLeft, Lock, Upload, X, CheckCircle2, MapPin, User, Briefcase } from "lucide-react";
+import { Star, ArrowLeft, Upload, X, CheckCircle2, MapPin, User, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const TestimonialNew = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [pwError, setPwError] = useState(false);
 
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -24,16 +20,6 @@ const TestimonialNew = () => {
   const [avatar, setAvatar] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleAuth = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (verifyTestimonialPassword(password)) {
-      setAuthenticated(true);
-      setPwError(false);
-    } else {
-      setPwError(true);
-    }
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,32 +60,6 @@ const TestimonialNew = () => {
     setSubmitted(true);
   };
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4">
-        <div className="glass-card !p-10 w-full max-w-md text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="font-heading text-2xl font-bold text-foreground mb-2">Restricted Access</h1>
-          <p className="text-muted-foreground text-sm mb-8">Enter the password to submit a testimonial.</p>
-          <form onSubmit={handleAuth} className="space-y-4">
-            <Input
-              type="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setPwError(false); }}
-              className={pwError ? "border-destructive" : ""}
-              autoFocus
-            />
-            {pwError && <p className="text-xs text-destructive">Incorrect password.</p>}
-            <Button type="submit" className="w-full">Unlock</Button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   if (submitted) {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center px-4">
@@ -108,7 +68,8 @@ const TestimonialNew = () => {
             <CheckCircle2 className="w-8 h-8 text-primary" />
           </div>
           <h2 className="font-heading text-2xl font-bold text-foreground mb-2">Thank You!</h2>
-          <p className="text-muted-foreground mb-8">Your testimonial has been submitted successfully.</p>
+          <p className="text-muted-foreground mb-2">Your testimonial has been submitted for review.</p>
+          <p className="text-sm text-muted-foreground mb-8">It will appear on the website once approved by our team.</p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => navigate("/")}>Go Home</Button>
             <Button onClick={() => { setSubmitted(false); setName(""); setRole(""); setLocation(""); setRating(5); setText(""); setAvatar(""); }}>Add Another</Button>
@@ -126,8 +87,8 @@ const TestimonialNew = () => {
         </button>
 
         <div className="glass-card !p-8 sm:!p-10">
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-2">Submit a Testimonial</h1>
-          <p className="text-muted-foreground mb-8">Share your experience to help others feel confident about starting their journey.</p>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-2">Share Your Experience</h1>
+          <p className="text-muted-foreground mb-8">Help others feel confident about starting their journey. Your testimonial will be reviewed before publishing.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center gap-5">
@@ -154,25 +115,19 @@ const TestimonialNew = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
-                <User className="w-4 h-4 text-primary" /> Full Name *
-              </label>
+              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2"><User className="w-4 h-4 text-primary" /> Full Name *</label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Ayesha R." maxLength={100} className={errors.name ? "border-destructive" : ""} />
               {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
-                <Briefcase className="w-4 h-4 text-primary" /> Service Received *
-              </label>
+              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2"><Briefcase className="w-4 h-4 text-primary" /> Service Received *</label>
               <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Anxiety & Stress Management" maxLength={100} className={errors.role ? "border-destructive" : ""} />
               {errors.role && <p className="text-xs text-destructive mt-1">{errors.role}</p>}
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
-                <MapPin className="w-4 h-4 text-primary" /> Location
-              </label>
+              <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2"><MapPin className="w-4 h-4 text-primary" /> Location</label>
               <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Islamabad (optional)" maxLength={100} />
             </div>
 
@@ -198,6 +153,7 @@ const TestimonialNew = () => {
             </div>
 
             <Button type="submit" size="lg" className="w-full">Submit Testimonial</Button>
+            <p className="text-xs text-center text-muted-foreground">By submitting, you agree to have your testimonial published on our website after review.</p>
           </form>
         </div>
       </div>
