@@ -385,6 +385,90 @@ const SettingsPage = () => {
         </Card>
       )}
 
+      {/* Testimonial Approvals */}
+      {isStaff && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Star className="h-4 w-4" /> Testimonial Approvals
+              {pendingTestimonials.length > 0 && <Badge variant="secondary" className="text-xs">{pendingTestimonials.length} pending</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingTestimonials.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No pending testimonials</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingTestimonials.map(t => (
+                  <div key={t.id} className="p-3 rounded-lg border space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">{t.name}</p>
+                        <p className="text-xs text-muted-foreground">{t.role} {t.location && `· ${t.location}`}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: t.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />)}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{t.text}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-7 text-xs" onClick={() => approveTestimonial(t.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteTestimonial(t.id)}>
+                        <Trash2 className="h-3 w-3 mr-1" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Blog Comment Approvals */}
+      {isStaff && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" /> Blog Comment Approvals
+              {pendingComments.length > 0 && <Badge variant="secondary" className="text-xs">{pendingComments.length} pending</Badge>}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingComments.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No pending comments</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingComments.map(c => (
+                  <div key={c.id} className="p-3 rounded-lg border space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        {c.author_name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{c.author_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{c.content}</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" className="h-7 text-xs" onClick={() => approveComment(c.id)}>
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => deleteComment(c.id)}>
+                        <Trash2 className="h-3 w-3 mr-1" /> Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Data Export (Doctor only) */}
       {isStaff && (
         <Card>
