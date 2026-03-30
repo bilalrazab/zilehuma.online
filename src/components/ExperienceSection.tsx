@@ -1,11 +1,11 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const timeline = [
-  { period: "June 2025 – Jan 2026", role: "Hypnotherapist", place: "Mind Power Artists – Gulberg, Islamabad" },
-  { period: "Sep 2023 – Jan 2025", role: "Clinical Internship", place: "Military Hospital Rawalpindi" },
-  { period: "2023 – 2024", role: "Clinical Psychology Observer", place: "Military Hospital Rawalpindi" },
-  { period: "Mar 2023 – May 2023", role: "Clinical Intern", place: "Aeman Rehabilitation Center" },
-  { period: "2021 – 2023", role: "Special Education Teacher", place: "Learn-A-Lacious School" },
+  { period: "June 2025 – Jan 2026", role: "Hypnotherapist", place: "Mind Power Artists – Gulberg, Islamabad", detail: "Conducted clinical hypnotherapy sessions for phobias, habit change, emotional blocks, and deep relaxation using guided subconscious techniques." },
+  { period: "Sep 2023 – Jan 2025", role: "Clinical Internship", place: "Military Hospital Rawalpindi", detail: "Completed 16-month clinical training in psychiatry and psychology wards — conducted intake assessments, administered psychometric tests, and co-facilitated CBT group sessions." },
+  { period: "2023 – 2024", role: "Clinical Psychology Observer", place: "Military Hospital Rawalpindi", detail: "Observed senior psychologists in diagnostic evaluations, neuropsychological testing, and trauma-focused interventions across diverse patient populations." },
+  { period: "Mar 2023 – May 2023", role: "Clinical Intern", place: "Aeman Rehabilitation Center", detail: "Worked with individuals recovering from substance use disorders — provided motivational interviewing, psychoeducation, and relapse prevention counseling." },
+  { period: "2021 – 2023", role: "Special Education Teacher", place: "Learn-A-Lacious School", detail: "Designed individualized learning plans and behavioral interventions for children with developmental and learning disabilities." },
 ];
 
 const ExperienceSection = () => {
