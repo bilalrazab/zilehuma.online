@@ -148,10 +148,14 @@ const Blog = () => {
                   <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-muted-foreground">{formatDate(post.created_at)}</span>
-                      <button onClick={() => handleLike(post.id)} className="flex items-center gap-1 text-xs transition-colors text-muted-foreground hover:text-destructive">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Heart className="w-3.5 h-3.5" />
-                        {post.likes}
-                      </button>
+                        {likeCounts[post.id] || 0}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        {commentCounts[post.id] || 0}
+                      </span>
                       <button onClick={() => handleDeleteClick(post.id)} className="text-muted-foreground hover:text-destructive transition-colors" title="Delete">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
