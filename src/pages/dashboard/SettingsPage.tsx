@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Lock, Clock, Download, Bell, Shield, Calendar, Camera, Trash2, Mail } from "lucide-react";
+import { User, Lock, Clock, Download, Bell, Shield, Calendar, Camera, Trash2, Mail, Star, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const db = supabase as any;
