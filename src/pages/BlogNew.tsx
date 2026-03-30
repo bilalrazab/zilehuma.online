@@ -88,12 +88,6 @@ const BlogNew = () => {
   return (
     <>
       <Navbar />
-      <PasswordDialog
-        open={showPassword}
-        onClose={() => setShowPassword(false)}
-        onSuccess={handlePasswordSuccess}
-        action="publish this post"
-      />
       <main className="min-h-screen pt-24 pb-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <Link to="/blog" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 mb-6 transition-colors">
