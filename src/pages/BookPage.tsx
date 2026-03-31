@@ -130,71 +130,33 @@ const BookPage = () => {
     }
     setLoading(true);
     try {
-      const dateTime = `${format(selectedDate, "yyyy-MM-dd")}T${selectedTime}`;
-      const start = new Date(dateTime);
-      const end = new Date(start.getTime() + 50 * 60000);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      // Find doctor (first available)
-      const { data: doctors } = await db.from("user_roles").select("user_id").eq("role", "doctor").limit(1);
-      const doctorId = doctors?.[0]?.user_id;
-      if (!doctorId) throw new Error("No doctor available");
-
-      // Final duplicate check
-      const { data: existing } = await db.from("appointments").select("id")
-        .eq("doctor_id", doctorId)
-        .gte("start_time", new Date(start.getTime() - 50 * 60000).toISOString())
-        .lte("start_time", new Date(start.getTime() + 50 * 60000).toISOString())
-        .in("status", ["scheduled", "pending_approval"]);
-      
-      if (existing && existing.length > 0) {
-        toast({ title: "Time slot no longer available", description: "Please select another time.", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-
-      // Check if this email already has a client record
-      let clientId: string | null = null;
-      const { data: existingClient } = await db.from("clients").select("id").eq("email", form.email).single();
-      
-      if (existingClient) {
-        clientId = existingClient.id;
-      } else {
-        // Create a new client record
-        const { data: newClient, error: clientError } = await db.from("clients").insert({
-          full_name: form.name,
-          email: form.email,
-          phone: form.phone,
-          doctor_id: doctorId,
-          status: "active",
-          pipeline_stage: "new_inquiry",
-          notes: `Booked via public page. ${form.message || ""}`.trim(),
-        }).select("id").single();
-        if (clientError) throw clientError;
-        clientId = newClient.id;
-      }
-
-      // Create pending appointment
-      const { error } = await db.from("appointments").insert({
-        client_id: clientId,
-        doctor_id: doctorId,
-        start_time: start.toISOString(),
-        end_time: end.toISOString(),
-        duration_minutes: 50,
-        type: selectedMode,
-        title: `Session: ${sessionTypes.find(t => t.value === selectedType)?.label || selectedType}`,
-        notes: form.message || null,
-        status: "pending_approval",
+      const res = await fetch(`${supabaseUrl}/functions/v1/external-booking`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          client_name: form.name,
+          client_email: form.email,
+          client_phone: form.phone,
+          date: format(selectedDate, "yyyy-MM-dd"),
+          time: selectedTime,
+          type: selectedMode,
+          service: sessionTypes.find(t => t.value === selectedType)?.label || selectedType,
+          notes: form.message || undefined,
+          source: "website",
+        }),
       });
-      if (error) throw error;
 
-      // Notify doctor
-      await db.from("notifications").insert({
-        user_id: doctorId,
-        title: "New Booking Request 📅",
-        message: `${form.name} requested a session for ${format(start, "MMM d, h:mm a")} via the booking page.`,
-        type: "info",
-        link: "/dashboard/calendar",
-      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || "Booking failed");
+      }
 
       setSubmitted(true);
     } catch (err: any) {

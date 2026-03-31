@@ -164,7 +164,7 @@ const BookingSection = () => {
             <Send className="w-4 h-4" /> Send via WhatsApp
           </Button>
           <div className="text-center pt-2">
-            <Link to="/book" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
+            <Link to="/book-appointment" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
               <CalendarDays className="w-3.5 h-3.5" /> Or book directly from our calendar →
             </Link>
           </div>
