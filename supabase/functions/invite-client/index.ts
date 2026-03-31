@@ -124,33 +124,53 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Send invite email
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: redirect_url,
-      data: { full_name }
-    })
+    // Check if user already exists in auth
+    const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers()
+    const existingUser = existingUsers?.find((u: any) => u.email === email)
 
-    if (createError) {
-      console.error('Invite error:', createError.message, createError)
-      
-      // Handle common errors with user-friendly messages
-      let userMessage = createError.message
-      if (createError.message.includes('already been registered')) {
-        userMessage = `The email ${email} is already registered. The client may already have an account.`
-      } else if (createError.message.includes('rate limit')) {
-        userMessage = 'Too many invite attempts. Please wait a moment and try again.'
+    let userId: string
+
+    if (existingUser) {
+      // User already exists in auth — reuse their ID
+      userId = existingUser.id
+      console.log('Existing auth user found:', userId, '— linking as client')
+
+      // Send a password reset so they can set credentials and log in
+      const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'recovery',
+        email,
+        options: { redirectTo: redirect_url }
+      })
+      if (resetError) {
+        console.warn('Recovery link generation failed (non-blocking):', resetError.message)
       }
-      
-      return new Response(JSON.stringify({ error: userMessage }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    } else {
+      // New user — send invite
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: redirect_url,
+        data: { full_name }
       })
-    }
 
-    if (!newUser?.user?.id) {
-      console.error('Invite succeeded but no user returned')
-      return new Response(JSON.stringify({ error: 'Invite was sent but user record was not created properly' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+      if (createError) {
+        console.error('Invite error:', createError.message)
+        let userMessage = createError.message
+        if (createError.message.includes('rate limit')) {
+          userMessage = 'Too many invite attempts. Please wait a moment and try again.'
+        }
+        return new Response(JSON.stringify({ error: userMessage }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      if (!newUser?.user?.id) {
+        console.error('Invite succeeded but no user returned')
+        return new Response(JSON.stringify({ error: 'Invite was sent but user record was not created properly' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      userId = newUser.user.id
+      console.log('New user created:', userId)
     }
 
     console.log('User created:', newUser.user.id)
