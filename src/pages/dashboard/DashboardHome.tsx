@@ -749,7 +749,34 @@ const ClientPortalHome = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
+      {/* Attention Banners for Clients */}
+      {pendingTasks > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10 cursor-pointer" onClick={() => navigate('/dashboard/tasks')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <CheckSquare className="h-5 w-5 text-amber-500" />
+            <span className="text-sm font-medium">You have {pendingTasks} pending task{pendingTasks > 1 ? 's' : ''} to complete</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {unreadMessages > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10 cursor-pointer" onClick={() => navigate('/dashboard/messages')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-blue-500" />
+            <span className="text-sm font-medium">{unreadMessages} new message{unreadMessages > 1 ? 's' : ''} from your therapist</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {pendingResources.length > 0 && (
+        <Card className="border-violet-400/50 bg-violet-50/50 dark:bg-violet-950/10 cursor-pointer" onClick={() => navigate('/dashboard/progress')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <BookOpen className="h-5 w-5 text-violet-500" />
+            <span className="text-sm font-medium">{pendingResources.length} resource{pendingResources.length > 1 ? 's' : ''} assigned — review them</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/dashboard/sessions')}>
           <CardContent className="p-4 text-center">
