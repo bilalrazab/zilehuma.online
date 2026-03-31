@@ -521,10 +521,10 @@ const ClientFilePage = () => {
                   </div>
                   {sessions.filter(s => s.status === 'completed').length > 0 && (
                     <div><Label>Link to Session</Label>
-                      <Select value={paymentForm.session_id} onValueChange={v => setPaymentForm(p => ({ ...p, session_id: v }))}>
+                      <Select value={paymentForm.session_id || '_none'} onValueChange={v => setPaymentForm(p => ({ ...p, session_id: v === '_none' ? '' : v }))}>
                         <SelectTrigger><SelectValue placeholder="Optional..." /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="_none">None</SelectItem>
                           {sessions.filter(s => s.status === 'completed').map(s => (
                             <SelectItem key={s.id} value={s.id}>{format(parseISO(s.start_time), 'MMM d, h:mm a')}</SelectItem>
                           ))}
