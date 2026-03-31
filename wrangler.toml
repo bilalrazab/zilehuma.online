@@ -1,0 +1,6 @@
+name = "zilehuma-prerender"
+main = "worker/index.js"
+compatibility_date = "2025-03-31"
+
+# Update with your actual domain once ready:
+# routes = [{ pattern = "zilehuma.online/*", zone_name = "zilehuma.online" }]
