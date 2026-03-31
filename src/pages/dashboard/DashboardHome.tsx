@@ -24,7 +24,7 @@ const DoctorDashboard = () => {
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0, pendingRequests: 0 });
+  const [stats, setStats] = useState({ clients: 0, todaySessions: 0, pendingTasks: 0, unpaid: 0, revenue: 0, overdue: 0, pendingRequests: 0, unreadMessages: 0 });
   const [todaySessions, setTodaySessions] = useState<any[]>([]);
   const [upcomingWeek, setUpcomingWeek] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
@@ -37,6 +37,7 @@ const DoctorDashboard = () => {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [pendingTestimonials, setPendingTestimonials] = useState<any[]>([]);
   const [pendingComments, setPendingComments] = useState<any[]>([]);
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -45,7 +46,7 @@ const DoctorDashboard = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
 
-    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes, testimonialsRes, commentsRes] = await Promise.all([
+    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes, testimonialsRes, commentsRes, unreadMsgRes] = await Promise.all([
       db.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       db.from('appointments').select('*, clients(full_name)').gte('start_time', today + 'T00:00:00').lte('start_time', today + 'T23:59:59').order('start_time'),
       db.from('tasks').select('*, clients(full_name)').eq('status', 'pending').lte('due_date', today).order('priority'),
@@ -58,9 +59,10 @@ const DoctorDashboard = () => {
       db.from('clients').select('*').order('created_at', { ascending: false }).limit(5),
       db.from('tasks').select('type, status'),
       db.from('timeline_logs').select('*, clients:client_id(full_name)').order('created_at', { ascending: false }).limit(15),
-      db.from('appointments').select('*, clients(full_name, email)').eq('status', 'pending_approval').order('start_time'),
+      db.from('appointments').select('*, clients(full_name, email, phone, user_id, pipeline_stage, notes)').eq('status', 'pending_approval').order('start_time'),
       db.from('testimonials').select('*').eq('approved', false).order('created_at', { ascending: false }),
       db.from('blog_comments').select('*').eq('approved', false).order('created_at', { ascending: false }),
+      db.from('messages').select('*', { count: 'exact', head: true }).eq('read', false).neq('sender_id', user?.id),
     ]);
 
     const totalRevenue = (paymentsRes.data || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
@@ -73,6 +75,7 @@ const DoctorDashboard = () => {
       revenue: totalRevenue,
       overdue: overdueRes.data?.length || 0,
       pendingRequests: (pendingReqRes.data || []).length,
+      unreadMessages: unreadMsgRes.count || 0,
     });
 
     setPendingRequests(pendingReqRes.data || []);
@@ -205,7 +208,24 @@ const DoctorDashboard = () => {
         </Card>
       )}
 
-      {/* KPI Cards */}
+      {/* Attention Banners */}
+      {stats.unreadMessages > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10 cursor-pointer" onClick={() => navigate('/dashboard/messages')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-blue-500" />
+            <span className="text-sm font-medium">{stats.unreadMessages} unread message{stats.unreadMessages > 1 ? 's' : ''} from clients</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {stats.unpaid > 0 && (
+        <Card className="border-pink-400/50 bg-pink-50/50 dark:bg-pink-950/10">
+          <CardContent className="p-3 flex items-center gap-3">
+            <DollarSign className="h-5 w-5 text-pink-500" />
+            <span className="text-sm font-medium">{stats.unpaid} unpaid session{stats.unpaid > 1 ? 's' : ''} need attention</span>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/dashboard/clients')}>
           <CardContent className="p-4">
@@ -299,21 +319,77 @@ const DoctorDashboard = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            {pendingRequests.map((r: any) => (
-              <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-background border">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
-                    <span className="capitalize">{r.type}</span>
+            {pendingRequests.map((r: any) => {
+              const isLead = !r.clients?.user_id;
+              const isExpanded = expandedRequest === r.id;
+              return (
+                <div key={r.id} className="rounded-lg bg-background border overflow-hidden">
+                  <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/30" onClick={() => setExpandedRequest(isExpanded ? null : r.id)}>
+                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isLead ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                      {r.clients?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
+                        {isLead && <Badge className="text-[9px] h-4 px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200" variant="outline">Website Lead</Badge>}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
+                        <span className="capitalize">{r.type}</span>
+                        {r.duration_minutes && <span>{r.duration_minutes}m</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); approveRequest(r); }}>Approve</Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={(e) => { e.stopPropagation(); rejectRequest(r); }}>Decline</Button>
+                    </div>
                   </div>
+                  {isExpanded && (
+                    <div className="px-3 pb-3 border-t bg-muted/20">
+                      <div className="grid grid-cols-2 gap-3 pt-3 text-xs">
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Email</p>
+                          <p className="font-medium">{r.clients?.email || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Phone</p>
+                          <p className="font-medium">{r.clients?.phone || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Session Type</p>
+                          <p className="font-medium capitalize">{r.type}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Duration</p>
+                          <p className="font-medium">{r.duration_minutes || 50} minutes</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Date & Time</p>
+                          <p className="font-medium">{format(parseISO(r.start_time), 'EEEE, MMMM d, yyyy — h:mm a')}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Pipeline Stage</p>
+                          <p className="font-medium capitalize">{r.clients?.pipeline_stage?.replace(/_/g, ' ') || '—'}</p>
+                        </div>
+                        {r.title && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Title</p><p className="font-medium">{r.title}</p></div>}
+                        {r.notes && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Notes</p><p className="font-medium">{r.notes}</p></div>}
+                        {isLead && r.clients?.notes && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Client Source</p><p className="font-medium">{r.clients.notes}</p></div>}
+                      </div>
+                      {isLead && (
+                        <div className="mt-3 p-2 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                          <p className="text-[10px] text-blue-600 dark:text-blue-400">⚠ This is a website lead without an account. If approved, consider inviting them as a full client from the Clients page.</p>
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => navigate(`/dashboard/clients/${r.client_id}`)}>
+                          View Client File
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-1.5">
-                  <Button size="sm" className="h-7 text-xs" onClick={() => approveRequest(r)}>Approve</Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => rejectRequest(r)}>Decline</Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       )}
@@ -673,7 +749,34 @@ const ClientPortalHome = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
+      {/* Attention Banners for Clients */}
+      {pendingTasks > 0 && (
+        <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10 cursor-pointer" onClick={() => navigate('/dashboard/tasks')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <CheckSquare className="h-5 w-5 text-amber-500" />
+            <span className="text-sm font-medium">You have {pendingTasks} pending task{pendingTasks > 1 ? 's' : ''} to complete</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {unreadMessages > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10 cursor-pointer" onClick={() => navigate('/dashboard/messages')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-blue-500" />
+            <span className="text-sm font-medium">{unreadMessages} new message{unreadMessages > 1 ? 's' : ''} from your therapist</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {pendingResources.length > 0 && (
+        <Card className="border-violet-400/50 bg-violet-50/50 dark:bg-violet-950/10 cursor-pointer" onClick={() => navigate('/dashboard/progress')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <BookOpen className="h-5 w-5 text-violet-500" />
+            <span className="text-sm font-medium">{pendingResources.length} resource{pendingResources.length > 1 ? 's' : ''} assigned — review them</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/dashboard/sessions')}>
           <CardContent className="p-4 text-center">

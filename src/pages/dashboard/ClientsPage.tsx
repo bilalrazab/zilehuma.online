@@ -282,31 +282,36 @@ const ClientsPage = () => {
         </div>
       ) : (
         <div className="grid gap-3">
-          {filtered.map(c => (
-            <Card key={c.id} className={`cursor-pointer hover:shadow-md transition-shadow ${c.risk_level === 'high' ? 'border-l-4 border-l-destructive' : c.risk_level === 'moderate' ? 'border-l-4 border-l-amber-400' : ''}`}
-              onClick={() => navigate(`/dashboard/clients/${c.id}`)}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary flex-shrink-0">
-                    {c.full_name?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm truncate">{c.full_name}</p>
-                      {c.risk_level === 'high' && <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />}
+          {filtered.map(c => {
+            const isLead = !c.user_id;
+            return (
+              <Card key={c.id} className={`cursor-pointer hover:shadow-md transition-shadow ${c.risk_level === 'high' ? 'border-l-4 border-l-destructive' : c.risk_level === 'moderate' ? 'border-l-4 border-l-amber-400' : isLead ? 'border-l-4 border-l-blue-400' : ''}`}
+                onClick={() => navigate(`/dashboard/clients/${c.id}`)}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${isLead ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                      {c.full_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                      {c.email && <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3" />{c.email}</span>}
-                      {c.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm truncate">{c.full_name}</p>
+                        {isLead && <Badge className="text-[9px] h-4 px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" variant="outline">Website Lead</Badge>}
+                        {c.risk_level === 'high' && <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />}
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                        {c.email && <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3" />{c.email}</span>}
+                        {c.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
+                      </div>
+                      {isLead && c.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Source: {c.notes}</p>}
                     </div>
+                    <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
+                      {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
+                    </Badge>
                   </div>
-                  <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
-                    {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

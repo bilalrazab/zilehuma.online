@@ -221,14 +221,19 @@ const ClientFilePage = () => {
   };
 
   const addPayment = async () => {
-    if (!paymentForm.amount) return;
-    await db.from('payments').insert({
-      client_id: id, amount: parseFloat(paymentForm.amount), method: paymentForm.method,
-      notes: paymentForm.notes || null, session_id: paymentForm.session_id || null,
-      status: 'paid', payment_date: new Date().toISOString().split('T')[0]
-    });
-    setPaymentOpen(false); setPaymentForm({ amount: '', method: 'cash', notes: '', session_id: '' });
-    toast({ title: "Payment recorded" }); load();
+    if (!paymentForm.amount) { toast({ title: "Please enter an amount", variant: "destructive" }); return; }
+    try {
+      const { error } = await db.from('payments').insert({
+        client_id: id, amount: parseFloat(paymentForm.amount), method: paymentForm.method,
+        notes: paymentForm.notes || null, session_id: paymentForm.session_id && paymentForm.session_id !== '_none' ? paymentForm.session_id : null,
+        status: 'paid', payment_date: new Date().toISOString().split('T')[0]
+      });
+      if (error) throw error;
+      setPaymentOpen(false); setPaymentForm({ amount: '', method: 'cash', notes: '', session_id: '' });
+      toast({ title: "Payment recorded" }); load();
+    } catch (err: any) {
+      toast({ title: "Failed to record payment", description: err.message, variant: "destructive" });
+    }
   };
 
   const assignResource = async () => {
@@ -516,10 +521,10 @@ const ClientFilePage = () => {
                   </div>
                   {sessions.filter(s => s.status === 'completed').length > 0 && (
                     <div><Label>Link to Session</Label>
-                      <Select value={paymentForm.session_id} onValueChange={v => setPaymentForm(p => ({ ...p, session_id: v }))}>
+                      <Select value={paymentForm.session_id || '_none'} onValueChange={v => setPaymentForm(p => ({ ...p, session_id: v === '_none' ? '' : v }))}>
                         <SelectTrigger><SelectValue placeholder="Optional..." /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="_none">None</SelectItem>
                           {sessions.filter(s => s.status === 'completed').map(s => (
                             <SelectItem key={s.id} value={s.id}>{format(parseISO(s.start_time), 'MMM d, h:mm a')}</SelectItem>
                           ))}
