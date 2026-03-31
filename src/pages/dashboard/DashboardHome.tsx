@@ -19,17 +19,6 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 
 const db = supabase as any;
 
-const isClientOnboardingComplete = (client: any) => {
-  const hasRequiredFields = Boolean(
-    client?.phone?.trim?.() &&
-    client?.gender?.trim?.() &&
-    client?.date_of_birth &&
-    client?.emergency_contact?.trim?.()
-  );
-  const completedPipelineStages = new Set(['intake_completed', 'booked', 'active', 'inactive', 'closed']);
-  return hasRequiredFields || completedPipelineStages.has(client?.pipeline_stage || '');
-};
-
 /* ─── DOCTOR DASHBOARD ─── */
 const DoctorDashboard = () => {
   const { profile, user } = useAuth();
@@ -688,27 +677,30 @@ const ClientPortalHome = () => {
 
   const load = async () => {
     const { data: clientRow } = await db.from('clients').select('*').eq('user_id', user?.id).single();
-    if (!clientRow) {
-      navigate('/dashboard/onboarding', { replace: true });
-      return;
-    }
-    // Redirect to onboarding if profile incomplete
-    if (!isClientOnboardingComplete(clientRow)) {
-      navigate('/dashboard/onboarding', { replace: true });
-      return;
-    }
-    const cid = clientRow.id;
+    const cid = clientRow?.id || null;
     const now = new Date().toISOString();
 
     const [sessionRes, tasksRes, msgRes, moodRes, goalsRes, resourcesRes, timelineRes, sessionCountRes] = await Promise.all([
-      db.from('appointments').select('*').eq('client_id', cid).gte('start_time', now).eq('status', 'scheduled').order('start_time').limit(1),
-      db.from('tasks').select('*').eq('client_id', cid),
+      cid
+        ? db.from('appointments').select('*').eq('client_id', cid).gte('start_time', now).eq('status', 'scheduled').order('start_time').limit(1)
+        : Promise.resolve({ data: [] }),
+      cid
+        ? db.from('tasks').select('*').eq('client_id', cid)
+        : Promise.resolve({ data: [] }),
       db.from('messages').select('*', { count: 'exact', head: true }).eq('read', false).neq('sender_id', user?.id),
       db.from('mood_entries').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }).limit(14),
-      db.from('goals').select('*').eq('client_id', cid),
-      db.from('resource_assignments').select('*, resources(title, type)').eq('client_id', cid).eq('status', 'pending'),
-      db.from('timeline_logs').select('*').eq('client_id', cid).order('created_at', { ascending: false }).limit(10),
-      db.from('appointments').select('*', { count: 'exact', head: true }).eq('client_id', cid).eq('status', 'completed'),
+      cid
+        ? db.from('goals').select('*').eq('client_id', cid)
+        : Promise.resolve({ data: [] }),
+      cid
+        ? db.from('resource_assignments').select('*, resources(title, type)').eq('client_id', cid).eq('status', 'pending')
+        : Promise.resolve({ data: [] }),
+      cid
+        ? db.from('timeline_logs').select('*').eq('client_id', cid).order('created_at', { ascending: false }).limit(10)
+        : Promise.resolve({ data: [] }),
+      cid
+        ? db.from('appointments').select('*', { count: 'exact', head: true }).eq('client_id', cid).eq('status', 'completed')
+        : Promise.resolve({ count: 0 }),
     ]);
 
     setNextSession(sessionRes.data?.[0] || null);
