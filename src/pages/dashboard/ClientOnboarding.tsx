@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,12 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, User, Heart, Shield, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
-import { useRef } from "react";
+import {
+  type ClientProfileField,
+  type ClientProfileFormValues,
+  normalizeClientProfileValues,
+  validateClientProfileValues,
+} from "@/lib/clientProfile";
 
 const db = supabase as any;
 
@@ -28,7 +33,7 @@ const ClientOnboarding = () => {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
   const [clientId, setClientId] = useState<string | null>(null);
   
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ClientProfileFormValues>({
     full_name: profile?.full_name || '',
     phone: profile?.phone || '',
     gender: '',
@@ -38,16 +43,24 @@ const ClientOnboarding = () => {
     emergency_phone: '',
     notes: '',
   });
+  const [errors, setErrors] = useState<Partial<Record<ClientProfileField, string>>>({});
 
   const hasCompletedOnboarding = (client: any) => {
-    const hasRequiredFields = Boolean(
-      client?.phone?.trim?.() &&
-      client?.gender?.trim?.() &&
-      client?.date_of_birth &&
-      client?.emergency_contact?.trim?.()
+    const completionErrors = validateClientProfileValues(
+      normalizeClientProfileValues({
+        full_name: client?.full_name || '',
+        phone: client?.phone || '',
+        gender: client?.gender || '',
+        date_of_birth: client?.date_of_birth || '',
+        address: client?.address || '',
+        emergency_contact: client?.emergency_contact || '',
+        emergency_phone: client?.emergency_phone || '',
+        notes: client?.notes || '',
+      }),
+      ['full_name', 'phone', 'gender', 'date_of_birth', 'address', 'emergency_contact', 'emergency_phone'],
     );
-    const completedPipelineStages = new Set(['intake_completed', 'booked', 'active', 'inactive', 'closed']);
-    return hasRequiredFields || completedPipelineStages.has(client?.pipeline_stage || '');
+
+    return Object.keys(completionErrors).length === 0;
   };
 
   useEffect(() => {
@@ -56,7 +69,7 @@ const ClientOnboarding = () => {
       const { data } = await db.from('clients').select('*').eq('user_id', user.id).single();
       if (data) {
         setClientId(data.id);
-        setForm(prev => ({
+        setForm(prev => normalizeClientProfileValues({
           ...prev,
           full_name: data.full_name || prev.full_name,
           phone: data.phone || prev.phone,
@@ -82,6 +95,10 @@ const ClientOnboarding = () => {
   const uploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!user?.id) {
+      toast({ title: "Please sign in again", variant: "destructive" });
+      return;
+    }
     if (file.size > 2 * 1024 * 1024) {
       toast({ title: "File too large", description: "Max 2MB", variant: "destructive" });
       return;
@@ -89,12 +106,12 @@ const ClientOnboarding = () => {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop();
-      const path = `${user?.id}/avatar.${ext}`;
+      const path = `${user.id}/avatar.${ext}`;
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
       const url = urlData.publicUrl + '?t=' + Date.now();
-      await db.from('profiles').update({ avatar_url: url, updated_at: new Date().toISOString() }).eq('id', user?.id);
+      await db.from('profiles').update({ avatar_url: url, updated_at: new Date().toISOString() }).eq('id', user.id);
       setAvatarUrl(url);
       toast({ title: "Photo uploaded ✓" });
     } catch (err: any) {
@@ -103,56 +120,80 @@ const ClientOnboarding = () => {
     setUploading(false);
   };
 
+  const validateStep = (stepNumber: number) => {
+    const stepFields: Record<number, ClientProfileField[]> = {
+      1: ['full_name', 'phone', 'gender', 'date_of_birth', 'address'],
+      2: ['emergency_contact', 'emergency_phone'],
+      3: ['notes'],
+    };
+
+    const normalized = normalizeClientProfileValues(form);
+    const stepErrors = validateClientProfileValues(normalized, stepFields[stepNumber] || []);
+
+    setForm(normalized);
+    if (Object.keys(stepErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...stepErrors }));
+      toast({ title: "Please fix the highlighted fields", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
   const handleComplete = async () => {
-    if (!form.full_name.trim()) {
-      toast({ title: "Full name is required", variant: "destructive" });
+    if (!user?.id) {
+      toast({ title: "Please sign in again", variant: "destructive" });
       return;
     }
-    if (!form.phone.trim() || !form.gender || !form.date_of_birth || !form.emergency_contact.trim()) {
-      toast({
-        title: "Please complete required fields",
-        description: "Phone, gender, date of birth, and emergency contact are required.",
-        variant: "destructive"
-      });
+
+    const normalized = normalizeClientProfileValues(form);
+    const validationErrors = validateClientProfileValues(normalized);
+
+    setForm(normalized);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      toast({ title: "Please complete all required fields", variant: "destructive" });
       return;
     }
+
     setSaving(true);
     try {
       // Update profile
       const { error: profileErr } = await db.from('profiles').update({
-        full_name: form.full_name.trim(),
-        phone: form.phone.trim(),
+        full_name: normalized.full_name,
+        phone: normalized.phone,
         updated_at: new Date().toISOString(),
-      }).eq('id', user?.id);
+      }).eq('id', user.id);
       if (profileErr) throw profileErr;
 
       // Update or create client record
       if (clientId) {
         const { error: clientErr } = await db.from('clients').update({
-          full_name: form.full_name.trim(),
-          phone: form.phone.trim(),
-          gender: form.gender,
-          date_of_birth: form.date_of_birth || null,
-          address: form.address.trim(),
-          emergency_contact: form.emergency_contact.trim(),
-          emergency_phone: form.emergency_phone.trim(),
-          notes: form.notes.trim(),
+          full_name: normalized.full_name,
+          phone: normalized.phone,
+          gender: normalized.gender,
+          date_of_birth: normalized.date_of_birth,
+          address: normalized.address,
+          emergency_contact: normalized.emergency_contact,
+          emergency_phone: normalized.emergency_phone,
+          notes: normalized.notes,
           pipeline_stage: 'intake_completed',
+          status: 'active',
         }).eq('id', clientId);
         if (clientErr) throw clientErr;
       } else {
         // No client record yet — create one linked to this user
         const { error: insertErr } = await db.from('clients').insert({
-          user_id: user?.id,
-          full_name: form.full_name.trim(),
-          email: user?.email || '',
-          phone: form.phone.trim(),
-          gender: form.gender,
-          date_of_birth: form.date_of_birth || null,
-          address: form.address.trim(),
-          emergency_contact: form.emergency_contact.trim(),
-          emergency_phone: form.emergency_phone.trim(),
-          notes: form.notes.trim(),
+          user_id: user.id,
+          full_name: normalized.full_name,
+          email: user.email || '',
+          phone: normalized.phone,
+          gender: normalized.gender,
+          date_of_birth: normalized.date_of_birth,
+          address: normalized.address,
+          emergency_contact: normalized.emergency_contact,
+          emergency_phone: normalized.emergency_phone,
+          notes: normalized.notes,
           pipeline_stage: 'intake_completed',
           status: 'active',
         });
@@ -167,7 +208,10 @@ const ClientOnboarding = () => {
     setSaving(false);
   };
 
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+  const update = (field: ClientProfileField, value: string) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
@@ -214,14 +258,16 @@ const ClientOnboarding = () => {
               <div>
                 <Label>Full Name <span className="text-destructive">*</span></Label>
                 <Input value={form.full_name} onChange={e => update('full_name', e.target.value)} placeholder="Your full name" />
+                {errors.full_name && <p className="text-xs text-destructive mt-1">{errors.full_name}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Phone</Label>
+                  <Label>Phone <span className="text-destructive">*</span></Label>
                   <Input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+92..." />
+                  {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}
                 </div>
                 <div>
-                  <Label>Gender</Label>
+                  <Label>Gender <span className="text-destructive">*</span></Label>
                   <Select value={form.gender} onValueChange={v => update('gender', v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
@@ -231,17 +277,20 @@ const ClientOnboarding = () => {
                       <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.gender && <p className="text-xs text-destructive mt-1">{errors.gender}</p>}
                 </div>
               </div>
               <div>
-                <Label>Date of Birth</Label>
+                <Label>Date of Birth <span className="text-destructive">*</span></Label>
                 <Input type="date" value={form.date_of_birth} onChange={e => update('date_of_birth', e.target.value)} />
+                {errors.date_of_birth && <p className="text-xs text-destructive mt-1">{errors.date_of_birth}</p>}
               </div>
               <div>
-                <Label>Address / City</Label>
+                <Label>Address / City <span className="text-destructive">*</span></Label>
                 <Input value={form.address} onChange={e => update('address', e.target.value)} placeholder="Your city or address" />
+                {errors.address && <p className="text-xs text-destructive mt-1">{errors.address}</p>}
               </div>
-              <Button className="w-full" onClick={() => setStep(2)}>
+              <Button className="w-full" onClick={() => validateStep(1) && setStep(2)}>
                 Continue <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </CardContent>
@@ -260,16 +309,18 @@ const ClientOnboarding = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Emergency Contact Name</Label>
+                <Label>Emergency Contact Name <span className="text-destructive">*</span></Label>
                 <Input value={form.emergency_contact} onChange={e => update('emergency_contact', e.target.value)} placeholder="e.g. Parent, spouse, sibling" />
+                {errors.emergency_contact && <p className="text-xs text-destructive mt-1">{errors.emergency_contact}</p>}
               </div>
               <div>
-                <Label>Emergency Contact Phone</Label>
+                <Label>Emergency Contact Phone <span className="text-destructive">*</span></Label>
                 <Input value={form.emergency_phone} onChange={e => update('emergency_phone', e.target.value)} placeholder="+92..." />
+                {errors.emergency_phone && <p className="text-xs text-destructive mt-1">{errors.emergency_phone}</p>}
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Back</Button>
-                <Button className="flex-1" onClick={() => setStep(3)}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
+                <Button className="flex-1" onClick={() => validateStep(2) && setStep(3)}>Continue <ArrowRight className="h-4 w-4 ml-2" /></Button>
               </div>
             </CardContent>
           </Card>
@@ -291,6 +342,7 @@ const ClientOnboarding = () => {
                 <Textarea value={form.notes} onChange={e => update('notes', e.target.value)}
                   placeholder="What brings you here? Any concerns, goals, or things we should know..."
                   rows={4} />
+                {errors.notes && <p className="text-xs text-destructive mt-1">{errors.notes}</p>}
               </div>
 
               <div className="rounded-lg border p-4 bg-muted/30 space-y-2 text-sm">
