@@ -208,7 +208,24 @@ const DoctorDashboard = () => {
         </Card>
       )}
 
-      {/* KPI Cards */}
+      {/* Attention Banners */}
+      {stats.unreadMessages > 0 && (
+        <Card className="border-blue-400/50 bg-blue-50/50 dark:bg-blue-950/10 cursor-pointer" onClick={() => navigate('/dashboard/messages')}>
+          <CardContent className="p-3 flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-blue-500" />
+            <span className="text-sm font-medium">{stats.unreadMessages} unread message{stats.unreadMessages > 1 ? 's' : ''} from clients</span>
+            <ArrowRight className="h-4 w-4 ml-auto text-muted-foreground" />
+          </CardContent>
+        </Card>
+      )}
+      {stats.unpaid > 0 && (
+        <Card className="border-pink-400/50 bg-pink-50/50 dark:bg-pink-950/10">
+          <CardContent className="p-3 flex items-center gap-3">
+            <DollarSign className="h-5 w-5 text-pink-500" />
+            <span className="text-sm font-medium">{stats.unpaid} unpaid session{stats.unpaid > 1 ? 's' : ''} need attention</span>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/dashboard/clients')}>
           <CardContent className="p-4">
