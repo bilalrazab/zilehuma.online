@@ -19,6 +19,17 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 
 const db = supabase as any;
 
+const isClientOnboardingComplete = (client: any) => {
+  const hasRequiredFields = Boolean(
+    client?.phone?.trim?.() &&
+    client?.gender?.trim?.() &&
+    client?.date_of_birth &&
+    client?.emergency_contact?.trim?.()
+  );
+  const completedPipelineStages = new Set(['intake_completed', 'booked', 'active', 'inactive', 'closed']);
+  return hasRequiredFields || completedPipelineStages.has(client?.pipeline_stage || '');
+};
+
 /* ─── DOCTOR DASHBOARD ─── */
 const DoctorDashboard = () => {
   const { profile, user } = useAuth();
@@ -677,9 +688,12 @@ const ClientPortalHome = () => {
 
   const load = async () => {
     const { data: clientRow } = await db.from('clients').select('*').eq('user_id', user?.id).single();
-    if (!clientRow) return;
+    if (!clientRow) {
+      navigate('/dashboard/onboarding', { replace: true });
+      return;
+    }
     // Redirect to onboarding if profile incomplete
-    if (!clientRow.phone || !clientRow.gender || !clientRow.date_of_birth || !clientRow.emergency_contact) {
+    if (!isClientOnboardingComplete(clientRow)) {
       navigate('/dashboard/onboarding', { replace: true });
       return;
     }

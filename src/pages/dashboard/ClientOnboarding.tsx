@@ -39,6 +39,17 @@ const ClientOnboarding = () => {
     notes: '',
   });
 
+  const hasCompletedOnboarding = (client: any) => {
+    const hasRequiredFields = Boolean(
+      client?.phone?.trim?.() &&
+      client?.gender?.trim?.() &&
+      client?.date_of_birth &&
+      client?.emergency_contact?.trim?.()
+    );
+    const completedPipelineStages = new Set(['intake_completed', 'booked', 'active', 'inactive', 'closed']);
+    return hasRequiredFields || completedPipelineStages.has(client?.pipeline_stage || '');
+  };
+
   useEffect(() => {
     const loadClient = async () => {
       if (!user?.id) return;
@@ -56,8 +67,8 @@ const ClientOnboarding = () => {
           emergency_phone: data.emergency_phone || prev.emergency_phone,
           notes: data.notes || prev.notes,
         }));
-        // If client already has all info filled, redirect to dashboard
-        if (data.phone && data.gender && data.date_of_birth && data.emergency_contact) {
+        // If onboarding already completed, redirect to dashboard
+        if (hasCompletedOnboarding(data)) {
           navigate('/dashboard', { replace: true });
         }
       }
@@ -95,6 +106,14 @@ const ClientOnboarding = () => {
   const handleComplete = async () => {
     if (!form.full_name.trim()) {
       toast({ title: "Full name is required", variant: "destructive" });
+      return;
+    }
+    if (!form.phone.trim() || !form.gender || !form.date_of_birth || !form.emergency_contact.trim()) {
+      toast({
+        title: "Please complete required fields",
+        description: "Phone, gender, date of birth, and emergency contact are required.",
+        variant: "destructive"
+      });
       return;
     }
     setSaving(true);
