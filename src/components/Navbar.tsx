@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Blog", href: "/blog", isRoute: true },
   { label: "Booking", href: "#booking" },
   { label: "Contact", href: "#contact" },
+  { label: "Dashboard", href: "/dashboard", isRoute: true },
 ];
 
 const Navbar = () => {
