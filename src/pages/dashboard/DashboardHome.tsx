@@ -319,21 +319,77 @@ const DoctorDashboard = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            {pendingRequests.map((r: any) => (
-              <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-background border">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
-                    <span className="capitalize">{r.type}</span>
+            {pendingRequests.map((r: any) => {
+              const isLead = !r.clients?.user_id;
+              const isExpanded = expandedRequest === r.id;
+              return (
+                <div key={r.id} className="rounded-lg bg-background border overflow-hidden">
+                  <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/30" onClick={() => setExpandedRequest(isExpanded ? null : r.id)}>
+                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isLead ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                      {r.clients?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{r.clients?.full_name || 'Client'}</p>
+                        {isLead && <Badge className="text-[9px] h-4 px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200" variant="outline">Website Lead</Badge>}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{format(parseISO(r.start_time), 'MMM d, h:mm a')}</span>
+                        <span className="capitalize">{r.type}</span>
+                        {r.duration_minutes && <span>{r.duration_minutes}m</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); approveRequest(r); }}>Approve</Button>
+                      <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={(e) => { e.stopPropagation(); rejectRequest(r); }}>Decline</Button>
+                    </div>
                   </div>
+                  {isExpanded && (
+                    <div className="px-3 pb-3 border-t bg-muted/20">
+                      <div className="grid grid-cols-2 gap-3 pt-3 text-xs">
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Email</p>
+                          <p className="font-medium">{r.clients?.email || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Phone</p>
+                          <p className="font-medium">{r.clients?.phone || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Session Type</p>
+                          <p className="font-medium capitalize">{r.type}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Duration</p>
+                          <p className="font-medium">{r.duration_minutes || 50} minutes</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Date & Time</p>
+                          <p className="font-medium">{format(parseISO(r.start_time), 'EEEE, MMMM d, yyyy — h:mm a')}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground mb-0.5">Pipeline Stage</p>
+                          <p className="font-medium capitalize">{r.clients?.pipeline_stage?.replace(/_/g, ' ') || '—'}</p>
+                        </div>
+                        {r.title && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Title</p><p className="font-medium">{r.title}</p></div>}
+                        {r.notes && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Notes</p><p className="font-medium">{r.notes}</p></div>}
+                        {isLead && r.clients?.notes && <div className="col-span-2"><p className="text-muted-foreground mb-0.5">Client Source</p><p className="font-medium">{r.clients.notes}</p></div>}
+                      </div>
+                      {isLead && (
+                        <div className="mt-3 p-2 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                          <p className="text-[10px] text-blue-600 dark:text-blue-400">⚠ This is a website lead without an account. If approved, consider inviting them as a full client from the Clients page.</p>
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <Button size="sm" variant="outline" className="text-xs flex-1" onClick={() => navigate(`/dashboard/clients/${r.client_id}`)}>
+                          View Client File
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-1.5">
-                  <Button size="sm" className="h-7 text-xs" onClick={() => approveRequest(r)}>Approve</Button>
-                  <Button size="sm" variant="outline" className="h-7 text-xs text-destructive" onClick={() => rejectRequest(r)}>Decline</Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       )}
