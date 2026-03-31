@@ -139,7 +139,7 @@ const TasksPage = () => {
           <Select value={form.client_id} onValueChange={v => setForm(p => ({ ...p, client_id: v }))}>
             <SelectTrigger><SelectValue placeholder="Select client..." /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No client</SelectItem>
+              <SelectItem value="none">No client</SelectItem>
               {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
             </SelectContent>
           </Select>
