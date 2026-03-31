@@ -100,15 +100,16 @@ const ClientOnboarding = () => {
     setSaving(true);
     try {
       // Update profile
-      await db.from('profiles').update({
+      const { error: profileErr } = await db.from('profiles').update({
         full_name: form.full_name.trim(),
         phone: form.phone.trim(),
         updated_at: new Date().toISOString(),
       }).eq('id', user?.id);
+      if (profileErr) throw profileErr;
 
-      // Update client record
+      // Update or create client record
       if (clientId) {
-        await db.from('clients').update({
+        const { error: clientErr } = await db.from('clients').update({
           full_name: form.full_name.trim(),
           phone: form.phone.trim(),
           gender: form.gender,
@@ -119,6 +120,24 @@ const ClientOnboarding = () => {
           notes: form.notes.trim(),
           pipeline_stage: 'intake_completed',
         }).eq('id', clientId);
+        if (clientErr) throw clientErr;
+      } else {
+        // No client record yet — create one linked to this user
+        const { error: insertErr } = await db.from('clients').insert({
+          user_id: user?.id,
+          full_name: form.full_name.trim(),
+          email: user?.email || '',
+          phone: form.phone.trim(),
+          gender: form.gender,
+          date_of_birth: form.date_of_birth || null,
+          address: form.address.trim(),
+          emergency_contact: form.emergency_contact.trim(),
+          emergency_phone: form.emergency_phone.trim(),
+          notes: form.notes.trim(),
+          pipeline_stage: 'intake_completed',
+          status: 'active',
+        });
+        if (insertErr) throw insertErr;
       }
 
       toast({ title: "Profile complete! 🎉", description: "Welcome to your wellness portal." });
