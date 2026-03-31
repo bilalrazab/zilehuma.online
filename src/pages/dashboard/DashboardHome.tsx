@@ -46,7 +46,7 @@ const DoctorDashboard = () => {
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
 
-    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes, testimonialsRes, commentsRes] = await Promise.all([
+    const [clientsRes, sessionsRes, tasksRes, unpaidRes, paymentsRes, overdueRes, pipelineRes, weekSessionsRes, notifRes, recentClientsRes, allTasksRes, timelineRes, pendingReqRes, testimonialsRes, commentsRes, unreadMsgRes] = await Promise.all([
       db.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
       db.from('appointments').select('*, clients(full_name)').gte('start_time', today + 'T00:00:00').lte('start_time', today + 'T23:59:59').order('start_time'),
       db.from('tasks').select('*, clients(full_name)').eq('status', 'pending').lte('due_date', today).order('priority'),
@@ -59,9 +59,10 @@ const DoctorDashboard = () => {
       db.from('clients').select('*').order('created_at', { ascending: false }).limit(5),
       db.from('tasks').select('type, status'),
       db.from('timeline_logs').select('*, clients:client_id(full_name)').order('created_at', { ascending: false }).limit(15),
-      db.from('appointments').select('*, clients(full_name, email)').eq('status', 'pending_approval').order('start_time'),
+      db.from('appointments').select('*, clients(full_name, email, phone, user_id, pipeline_stage, notes)').eq('status', 'pending_approval').order('start_time'),
       db.from('testimonials').select('*').eq('approved', false).order('created_at', { ascending: false }),
       db.from('blog_comments').select('*').eq('approved', false).order('created_at', { ascending: false }),
+      db.from('messages').select('*', { count: 'exact', head: true }).eq('read', false).neq('sender_id', user?.id),
     ]);
 
     const totalRevenue = (paymentsRes.data || []).reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
