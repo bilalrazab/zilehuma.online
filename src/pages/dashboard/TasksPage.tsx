@@ -136,7 +136,7 @@ const TasksPage = () => {
       <div><Label>Title *</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} /></div>
       {isStaff && (
         <div><Label>Client</Label>
-          <Select value={form.client_id} onValueChange={v => setForm(p => ({ ...p, client_id: v }))}>
+          <Select value={form.client_id || 'none'} onValueChange={v => setForm(p => ({ ...p, client_id: v === 'none' ? '' : v }))}>
             <SelectTrigger><SelectValue placeholder="Select client..." /></SelectTrigger>
             <SelectContent>
               <SelectItem value="none">No client</SelectItem>
