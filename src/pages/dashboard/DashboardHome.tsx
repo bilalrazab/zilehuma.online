@@ -75,6 +75,7 @@ const DoctorDashboard = () => {
       revenue: totalRevenue,
       overdue: overdueRes.data?.length || 0,
       pendingRequests: (pendingReqRes.data || []).length,
+      unreadMessages: unreadMsgRes.count || 0,
     });
 
     setPendingRequests(pendingReqRes.data || []);
