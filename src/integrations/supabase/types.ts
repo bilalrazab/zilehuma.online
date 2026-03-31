@@ -1137,6 +1137,21 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_client_session_notes: {
+        Args: { _client_id: string }
+        Returns: {
+          appointment_id: string
+          assessment: string
+          client_id: string
+          created_at: string
+          doctor_id: string
+          id: string
+          objective: string
+          plan: string
+          subjective: string
+          updated_at: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
