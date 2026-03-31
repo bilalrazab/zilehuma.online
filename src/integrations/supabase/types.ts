@@ -1073,7 +1073,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      session_notes_client: {
+        Row: {
+          appointment_id: string | null
+          assessment: string | null
+          client_id: string | null
+          created_at: string | null
+          doctor_id: string | null
+          id: string | null
+          objective: string | null
+          plan: string | null
+          subjective: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          assessment?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          doctor_id?: string | null
+          id?: string | null
+          objective?: string | null
+          plan?: string | null
+          subjective?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          assessment?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          doctor_id?: string | null
+          id?: string | null
+          objective?: string | null
+          plan?: string | null
+          subjective?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_notes_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       delete_email: {
@@ -1083,6 +1136,21 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_client_session_notes: {
+        Args: { _client_id: string }
+        Returns: {
+          appointment_id: string
+          assessment: string
+          client_id: string
+          created_at: string
+          doctor_id: string
+          id: string
+          objective: string
+          plan: string
+          subjective: string
+          updated_at: string
+        }[]
       }
       get_user_role: {
         Args: { _user_id: string }
