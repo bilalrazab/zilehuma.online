@@ -173,11 +173,11 @@ Deno.serve(async (req) => {
       console.log('New user created:', userId)
     }
 
-    console.log('User created:', newUser.user.id)
+    console.log('Using user ID:', userId)
 
     // Create client record
     const { error: clientError } = await supabaseAdmin.from('clients').insert({
-      user_id: newUser.user.id,
+      user_id: userId,
       doctor_id: caller.id,
       full_name,
       email,
@@ -194,13 +194,6 @@ Deno.serve(async (req) => {
 
     if (clientError) {
       console.error('Client insert error:', clientError.message)
-      // Clean up user if client record fails
-      try {
-        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
-        console.log('Cleaned up user after client insert failure')
-      } catch (cleanupErr) {
-        console.error('Cleanup failed:', cleanupErr)
-      }
       return new Response(JSON.stringify({ error: `Failed to create client record: ${clientError.message}` }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -210,7 +203,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      user_id: newUser.user.id,
+      user_id: userId,
       invite_sent: true,
       message: `Invitation email sent to ${email}`
     }), {
