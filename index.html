@@ -331,7 +331,8 @@
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <!-- Preload hero image for faster LCP -->
-    <link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/hero-bg-mobile.webp" type="image/webp" fetchpriority="high" media="(max-width: 768px)">
+    <link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" media="(min-width: 769px)">
 
     <!-- Critical inline CSS for instant first paint -->
     <style>
