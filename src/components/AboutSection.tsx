@@ -45,8 +45,8 @@ const AboutSection = () => {
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-8 font-body">
             Whether you're dealing with anxiety, depression, trauma, or simply seeking personal growth,
             I offer both{" "}
-            <Link to="/services/individual-therapy" className="text-primary hover:underline">in-person sessions</Link> and{" "}
-            <Link to="/services/online-counseling" className="text-primary hover:underline">online counseling</Link> to meet you where you are.
+            <Link to="/services/individual-therapy" className="text-primary underline underline-offset-2 hover:text-primary/80">in-person sessions</Link> and{" "}
+            <Link to="/services/online-counseling" className="text-primary underline underline-offset-2 hover:text-primary/80">online counseling</Link> to meet you where you are.
           </p>
 
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
