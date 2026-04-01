@@ -100,15 +100,18 @@ const HeroSection = () => {
 
   return (
     <section id="home" className="relative min-h-[100svh] pt-28 sm:pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
-      <img
-        src="/images/hero-bg.jpg"
-        alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
-        width={1920}
-        height={1080}
-        fetchPriority="high"
-        decoding="async"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <picture>
+        <source srcSet="/images/hero-bg.webp" type="image/webp" />
+        <img
+          src="/images/hero-bg.jpg"
+          alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
+          width={1200}
+          height={675}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </picture>
       <div className="absolute inset-0 bg-black/55 dark:bg-black/65" />
 
       <Suspense fallback={null}>
