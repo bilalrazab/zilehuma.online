@@ -129,9 +129,7 @@ const HeroSection = () => {
       </picture>
       <div className="absolute inset-0 bg-black/55 dark:bg-black/65" />
 
-      <Suspense fallback={null}>
-        <PetalCanvas />
-      </Suspense>
+      <DelayedPetalCanvas />
 
       <div className="relative z-10 text-center px-6 sm:px-8 w-full max-w-2xl lg:max-w-4xl mx-auto">
         <p className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/80 mb-3 font-body drop-shadow-md">
