@@ -349,18 +349,25 @@
 </head>
 
   <body>
-    <div id="splash" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#f5f8f5;transition:opacity .5s ease-out,visibility .5s ease-out;">
+    <div id="splash">
       <div style="text-align:center;animation:splash-pulse 1.8s ease-in-out infinite;">
         <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(135deg,#5a9a7a,#8b7cc8);display:flex;align-items:center;justify-content:center;">
-          <span style="color:#fff;font-family:'Playfair Display',serif;font-size:28px;font-weight:700;">Z</span>
+          <span style="color:#fff;font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:700;">Z</span>
         </div>
-        <p style="font-family:'DM Sans',sans-serif;color:#6b7280;font-size:14px;letter-spacing:1px;">Loading...</p>
+        <p style="color:#6b7280;font-size:14px;letter-spacing:1px;">Loading...</p>
       </div>
     </div>
     <style>@keyframes splash-pulse{0%,100%{opacity:.7;transform:scale(.97)}50%{opacity:1;transform:scale(1)}}</style>
     <div id="root">
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#faf9f7;color:#2c2c2c;font-family:Georgia,serif;font-size:1.1rem;letter-spacing:0.08em;">
-        Zil-e-Huma Suleman
+      <!-- SSR-like critical content for instant FCP -->
+      <div class="hero-critical">
+        <img src="/images/hero-bg.webp" alt="Clinical Psychologist Islamabad" width="1200" height="675" fetchpriority="high">
+        <div class="overlay"></div>
+        <div class="hero-text">
+          <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;opacity:.8;margin-bottom:.75rem;">Zil-e-Huma Suleman</p>
+          <h1>Clinical Psychologist Islamabad<br><span style="color:#5a9a7a;">Your Path to Mental Wellness</span></h1>
+          <p>Creating safe spaces for healing through evidence-based therapy, compassion, and genuine human connection.</p>
+        </div>
       </div>
     </div>
 
