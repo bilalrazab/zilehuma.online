@@ -1,7 +1,7 @@
 /**
  * Cloudflare Worker — Bot-Aware Prerender Proxy
  * 
- * HOW IT WORKS (like Prerender.io):
+ * HOW IT WORKS:
  * 1. Every request to zilehuma.online hits this Worker first
  * 2. Worker checks User-Agent for known bots/crawlers
  * 3. If bot → proxy to the Supabase prerender edge function (full static HTML)
@@ -12,7 +12,7 @@
  * 2. Select your zilehuma.online domain
  * 3. Go to Workers & Pages → Create Worker
  * 4. Paste this code
- * 5. Go to Triggers → Add Route: zilehuma.online/* and *.zilehuma.online/*
+ * 5. Go to Triggers → Add Route: zilehuma.online/* and www.zilehuma.online/*
  * 6. Deploy
  * 
  * IMPORTANT: Your domain must be on Cloudflare DNS (proxied, orange cloud) for this to work.
@@ -21,7 +21,7 @@
 const PRERENDER_URL = "https://stdchygflgjzxpteizcw.supabase.co/functions/v1/prerender";
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0ZGNoeWdmbGdqenhwdGVpemN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTAwMjgsImV4cCI6MjA4ODUyNjAyOH0.GFn2sGF7vmqeIQK285HLuieJJxv9MYtI0vdpGL45bqc";
 
-// Comprehensive bot detection list — matches Prerender.io's list
+// Comprehensive bot detection list
 const BOT_AGENTS = [
   // Search engines
   "googlebot", "bingbot", "yandexbot", "duckduckbot", "baiduspider",
@@ -41,11 +41,11 @@ const BOT_AGENTS = [
   "prerender", "headlesschrome",
 ];
 
-// Paths that should be prerendered (only content pages)
-const PRERENDER_PATHS = ["/", "/blog", "/services/"];
+// Paths that should be prerendered (content pages only)
+const PRERENDER_PATHS = ["/", "/blog", "/services/", "/book-appointment"];
 const PRERENDER_PATTERNS = [/^\/blog\/[a-f0-9-]+$/, /^\/services\/[\w-]+$/];
 
-// Paths to NEVER prerender (static assets, API, dashboard)
+// Static asset extensions to never prerender
 const SKIP_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".map", ".json", ".xml", ".txt", ".pdf", ".mp4", ".webp", ".avif"];
 
 function isBot(ua) {
@@ -54,14 +54,10 @@ function isBot(ua) {
 }
 
 function shouldPrerender(pathname) {
-  // Skip static assets
   if (SKIP_EXTENSIONS.some((ext) => pathname.endsWith(ext))) return false;
-  // Skip dashboard, login, API
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/login") || pathname.startsWith("/signup") || pathname.startsWith("/api")) return false;
-  // Check if it's a content path
   if (PRERENDER_PATHS.some((p) => pathname === p || pathname.startsWith(p))) return true;
   if (PRERENDER_PATTERNS.some((p) => p.test(pathname))) return true;
-  // Prerender homepage
   if (pathname === "/" || pathname === "") return true;
   return false;
 }
@@ -71,6 +67,13 @@ export default {
     const url = new URL(request.url);
     const ua = request.headers.get("user-agent") || "";
     const pathname = url.pathname;
+
+    // Redirect www to non-www
+    if (url.hostname.startsWith("www.")) {
+      const target = new URL(request.url);
+      target.hostname = target.hostname.replace(/^www\./, "");
+      return Response.redirect(target.toString(), 301);
+    }
 
     // Only prerender for bots on content pages
     if (isBot(ua) && shouldPrerender(pathname)) {
@@ -89,19 +92,34 @@ export default {
             status: 200,
             headers: {
               "Content-Type": "text/html; charset=utf-8",
-              "Cache-Control": "public, max-age=3600, s-maxage=86400",
+              "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=43200",
               "X-Prerender": "1",
               "X-Robots-Tag": "index, follow",
+              "Vary": "User-Agent",
             },
           });
         }
       } catch (e) {
-        // If prerender fails, fall through to origin
         console.error("Prerender failed:", e);
       }
     }
 
     // Human visitors or prerender failure → pass through to origin
-    return fetch(request);
+    // Add performance cache headers for static assets
+    const response = await fetch(request);
+    
+    if (SKIP_EXTENSIONS.some((ext) => pathname.endsWith(ext))) {
+      const newHeaders = new Headers(response.headers);
+      if (!newHeaders.has("Cache-Control")) {
+        // Cache static assets for 1 year (they have hashed filenames from Vite)
+        newHeaders.set("Cache-Control", "public, max-age=31536000, immutable");
+      }
+      return new Response(response.body, {
+        status: response.status,
+        headers: newHeaders,
+      });
+    }
+
+    return response;
   },
 };
