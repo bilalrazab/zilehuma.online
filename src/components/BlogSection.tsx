@@ -91,7 +91,7 @@ const BlogSectionContent = ({ posts }: { posts: BlogPost[] }) => {
                   className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body"
                   aria-label={`Read more about ${post.title}`}
                 >
-                  Read more <ArrowRight className="w-3 h-3" />
+                  Read: {post.title.length > 30 ? post.title.slice(0, 30) + '…' : post.title} <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
             </article>
