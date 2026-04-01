@@ -543,9 +543,10 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=3600, s-maxage=86400",
+        "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=43200",
         "X-Prerender": "1",
         "X-Robots-Tag": "index, follow",
+        "Vary": "User-Agent",
       },
     });
   } catch (err) {
