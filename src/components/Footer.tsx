@@ -99,7 +99,7 @@ const Footer = () => {
       <p className="text-xs text-muted-foreground mt-4">© {new Date().getFullYear()} All rights reserved.</p>
       <p className="text-xs text-muted-foreground mt-2">
         Developed by{" "}
-        <a href="https://bilal-razab.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+        <a href="https://bilal-razab.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:text-primary/80">
           Bilal Razab
         </a>
       </p>
