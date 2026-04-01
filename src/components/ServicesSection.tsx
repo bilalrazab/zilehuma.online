@@ -2,7 +2,8 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Brain, HeartPulse, Sparkles, Activity, ClipboardCheck, Monitor } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const MENTAL_WELLNESS_IMAGE_URL = "/images/services-mental-wellness.jpg";
+const MENTAL_WELLNESS_IMAGE_WEBP = "/images/services-mental-wellness.webp";
+const MENTAL_WELLNESS_IMAGE_JPG = "/images/services-mental-wellness.jpg";
 
 const services = [
   { icon: Brain, title: "Individual Therapy", slug: "individual-therapy", desc: "One-on-one sessions for anxiety, depression, trauma, and personal growth — tailored to your unique needs and healing journey." },
@@ -25,14 +26,18 @@ const ServicesSection = () => {
         </div>
 
         <div className="max-w-5xl mx-auto mb-10">
-          <img
-            src={MENTAL_WELLNESS_IMAGE_URL}
-            alt="Mental wellness illustration representing therapy services by Clinical Psychologist in Islamabad"
-            width={1280}
-            height={720}
-            loading="lazy"
-            className="w-full max-w-md mx-auto rounded-2xl object-contain"
-          />
+          <picture>
+            <source srcSet={MENTAL_WELLNESS_IMAGE_WEBP} type="image/webp" />
+            <img
+              src={MENTAL_WELLNESS_IMAGE_JPG}
+              alt="Mental wellness illustration representing therapy services by Clinical Psychologist in Islamabad"
+              width={800}
+              height={450}
+              loading="lazy"
+              decoding="async"
+              className="w-full max-w-md mx-auto rounded-2xl object-contain"
+            />
+          </picture>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

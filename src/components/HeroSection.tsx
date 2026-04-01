@@ -5,6 +5,21 @@ import { CalendarDays, Sparkles } from "lucide-react";
 
 const PetalCanvas = lazy(() => import("./PetalCanvas"));
 
+// Delay petal canvas to avoid blocking LCP
+const DelayedPetalCanvas = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), 2000);
+    return () => clearTimeout(id);
+  }, []);
+  if (!show) return null;
+  return (
+    <Suspense fallback={null}>
+      <PetalCanvas />
+    </Suspense>
+  );
+};
+
 const scrollToSection = (id: string) => {
   const el = document.getElementById(id);
   if (el) {
@@ -100,20 +115,21 @@ const HeroSection = () => {
 
   return (
     <section id="home" className="relative min-h-[100svh] pt-28 sm:pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
-      <img
-        src="/images/hero-bg.jpg"
-        alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
-        width={1920}
-        height={1080}
-        fetchPriority="high"
-        decoding="async"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <picture>
+        <source srcSet="/images/hero-bg.webp" type="image/webp" />
+        <img
+          src="/images/hero-bg.jpg"
+          alt="Calming therapy office of Clinical Psychologist Zil-e-Huma Suleman in Islamabad"
+          width={1200}
+          height={675}
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </picture>
       <div className="absolute inset-0 bg-black/55 dark:bg-black/65" />
 
-      <Suspense fallback={null}>
-        <PetalCanvas />
-      </Suspense>
+      <DelayedPetalCanvas />
 
       <div className="relative z-10 text-center px-6 sm:px-8 w-full max-w-2xl lg:max-w-4xl mx-auto">
         <p className="text-xs sm:text-sm tracking-[0.2em] uppercase text-white/80 mb-3 font-body drop-shadow-md">

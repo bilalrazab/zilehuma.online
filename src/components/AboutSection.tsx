@@ -2,7 +2,8 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Heart, Shield, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const THERAPY_ROOM_IMAGE_URL = "/images/about-therapy-room.jpg";
+const THERAPY_ROOM_IMAGE_WEBP = "/images/about-therapy-room.webp";
+const THERAPY_ROOM_IMAGE_JPG = "/images/about-therapy-room.jpg";
 
 const AboutSection = () => {
   const ref = useScrollReveal();
@@ -16,14 +17,18 @@ const AboutSection = () => {
         </div>
 
         <div className="glass-card p-8 sm:p-10">
-          <img
-            src={THERAPY_ROOM_IMAGE_URL}
-            alt="Calming therapy room for clinical psychology sessions in Islamabad"
-            width={1280}
-            height={720}
-            loading="lazy"
-            className="w-full rounded-2xl mb-8 object-cover aspect-video"
-          />
+          <picture>
+            <source srcSet={THERAPY_ROOM_IMAGE_WEBP} type="image/webp" />
+            <img
+              src={THERAPY_ROOM_IMAGE_JPG}
+              alt="Calming therapy room for clinical psychology sessions in Islamabad"
+              width={800}
+              height={450}
+              loading="lazy"
+              decoding="async"
+              className="w-full rounded-2xl mb-8 object-cover aspect-video"
+            />
+          </picture>
 
           <p className="text-foreground/90 leading-relaxed text-base sm:text-lg mb-6 font-body">
             I'm Zil-e-Huma Suleman, a Clinical Psychologist practicing from The Plazzo, Gulberg Greens, Islamabad. I hold an
