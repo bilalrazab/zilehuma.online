@@ -44,11 +44,11 @@ const HEAD_META = `
 <link rel="canonical" href="${SITE}/">
 <link rel="alternate" type="text/plain" href="${SITE}/llms.txt" title="LLM-readable summary">
 <link rel="alternate" type="text/plain" href="${SITE}/llms-full.txt" title="LLM-readable full content">
-<meta property="og:type" content="website">
-<meta property="og:url" content="${SITE}/">
-<meta property="og:locale" content="en_PK">
-<meta property="og:site_name" content="Zil-e-Huma Suleman | Clinical Psychologist">
+<meta property="og:image" content="${SITE}/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${SITE}/og-image.png">
 <link rel="icon" type="image/png" href="/favicon.png">
 <style>
   body { font-family: 'DM Sans', sans-serif; color: #1a1a2e; max-width: 960px; margin: 0 auto; padding: 20px; line-height: 1.7; }
@@ -543,9 +543,10 @@ Deno.serve(async (req) => {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=3600, s-maxage=86400",
+        "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=43200",
         "X-Prerender": "1",
         "X-Robots-Tag": "index, follow",
+        "Vary": "User-Agent",
       },
     });
   } catch (err) {
