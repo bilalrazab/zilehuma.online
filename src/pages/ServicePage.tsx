@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { lazy, Suspense, useEffect } from "react";
+import SEO from "@/components/SEO";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
