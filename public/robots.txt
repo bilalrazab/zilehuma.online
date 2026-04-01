@@ -1,8 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/
 Disallow: /testimonial/new
 Disallow: /blog/new
-Disallow: /dashboard/
+Disallow: /login
+Disallow: /signup
+Disallow: /reset-password
 
 Sitemap: https://zilehuma.online/sitemap.xml
 
