@@ -1,0 +1,3 @@
+Contact: mailto:zilehumaconsultant@gmail.com
+Preferred-Languages: en, ur
+Canonical: https://zilehuma.online/.well-known/security.txt
