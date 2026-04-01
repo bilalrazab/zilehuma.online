@@ -332,6 +332,20 @@
 
     <!-- Preload hero image for faster LCP -->
     <link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high">
+
+    <!-- Critical inline CSS for instant first paint -->
+    <style>
+      *,*::before,*::after{box-sizing:border-box}
+      body{margin:0;font-family:'DM Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+      #splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#f5f8f5;transition:opacity .5s ease-out,visibility .5s ease-out}
+      #root{min-height:100vh}
+      .hero-critical{position:relative;min-height:100svh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#1a1a1a}
+      .hero-critical img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+      .hero-critical .overlay{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+      .hero-text{position:relative;z-index:10;text-align:center;color:#fff;padding:0 1.5rem}
+      .hero-text h1{font-family:'Playfair Display',Georgia,serif;font-weight:700;margin:0 0 1rem;font-size:clamp(1.25rem,4vw,2.5rem);line-height:1.2}
+      .hero-text p{font-size:clamp(.875rem,2vw,1.125rem);opacity:.9;max-width:28rem;margin:0 auto 2rem;line-height:1.6}
+    </style>
 </head>
 
   <body>
