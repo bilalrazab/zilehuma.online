@@ -26,14 +26,18 @@ const ServicesSection = () => {
         </div>
 
         <div className="max-w-5xl mx-auto mb-10">
-          <img
-            src={MENTAL_WELLNESS_IMAGE_URL}
-            alt="Mental wellness illustration representing therapy services by Clinical Psychologist in Islamabad"
-            width={1280}
-            height={720}
-            loading="lazy"
-            className="w-full max-w-md mx-auto rounded-2xl object-contain"
-          />
+          <picture>
+            <source srcSet={MENTAL_WELLNESS_IMAGE_WEBP} type="image/webp" />
+            <img
+              src={MENTAL_WELLNESS_IMAGE_JPG}
+              alt="Mental wellness illustration representing therapy services by Clinical Psychologist in Islamabad"
+              width={800}
+              height={450}
+              loading="lazy"
+              decoding="async"
+              className="w-full max-w-md mx-auto rounded-2xl object-contain"
+            />
+          </picture>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
