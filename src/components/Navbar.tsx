@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+
+const MenuIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+const XIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
 const navLinks = [
   { label: "Home", href: "#home" },
@@ -88,7 +98,7 @@ const Navbar = () => {
         <div className="flex md:hidden items-center gap-2">
           <ThemeToggle />
           <button onClick={() => setOpen(!open)} className="p-2 text-foreground" aria-label="Menu">
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {open ? <XIcon /> : <MenuIcon />}
           </button>
         </div>
       </div>

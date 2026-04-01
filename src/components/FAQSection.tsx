@@ -1,10 +1,4 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const faqs = [
   {
@@ -70,18 +64,27 @@ const FAQSection = () => {
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="w-full">
+        <div className="w-full divide-y divide-border">
           {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-              <AccordionTrigger className="text-left text-foreground font-body text-sm sm:text-base hover:no-underline hover:text-primary transition-colors">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground font-body leading-relaxed">
+            <details key={i} className="group">
+              <summary className="flex items-center justify-between cursor-pointer py-4 text-left text-foreground font-body text-sm sm:text-base hover:text-primary transition-colors list-none [&::-webkit-details-marker]:hidden">
+                <span>{faq.q}</span>
+                <svg
+                  className="w-4 h-4 shrink-0 ml-2 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="pb-4 text-muted-foreground font-body leading-relaxed text-sm">
                 {faq.a}
-              </AccordionContent>
-            </AccordionItem>
+              </p>
+            </details>
           ))}
-        </Accordion>
+        </div>
       </div>
     </section>
   );

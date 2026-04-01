@@ -1,8 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import ScrollProgress from "@/components/ScrollProgress";
 import SEO from "@/components/SEO";
+import LazyVisible from "@/components/LazyVisible";
 
 const AboutSection = lazy(() => import("@/components/AboutSection"));
 const ServicesSection = lazy(() => import("@/components/ServicesSection"));
@@ -42,20 +43,34 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <Suspense fallback={null}>
+        <LazyVisible>
           <AboutSection />
+        </LazyVisible>
+        <LazyVisible>
           <ServicesSection />
+        </LazyVisible>
+        <LazyVisible>
           <ExperienceSection />
+        </LazyVisible>
+        <LazyVisible>
           <BlogSection />
+        </LazyVisible>
+        <LazyVisible>
           <TestimonialsSection />
+        </LazyVisible>
+        <LazyVisible>
           <FAQSection />
+        </LazyVisible>
+        <LazyVisible>
           <BookingSection />
+        </LazyVisible>
+        <LazyVisible>
           <ContactSection />
-        </Suspense>
+        </LazyVisible>
       </main>
-      <Suspense fallback={null}>
+      <LazyVisible>
         <Footer />
-      </Suspense>
+      </LazyVisible>
     </>
   );
 };
