@@ -1,11 +1,9 @@
-import { lazy, Suspense, useEffect, useState, useCallback } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
-import { CalendarDays, Sparkles } from "lucide-react";
 
 const PetalCanvas = lazy(() => import("./PetalCanvas"));
 
-// Delay petal canvas to avoid blocking LCP
 const DelayedPetalCanvas = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -22,9 +20,7 @@ const DelayedPetalCanvas = () => {
 
 const scrollToSection = (id: string) => {
   const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth" });
-  }
+  if (el) el.scrollIntoView({ behavior: "smooth" });
 };
 
 const TAGLINE = "Your Path to Mental Wellness";
@@ -33,9 +29,7 @@ const SWEEP_COLORS = ['#E8B84B', '#E89D3E', '#D4783A', '#C75B8F', '#B04A9B'];
 const getCharColor = (charIndex: number, cursorPos: number, totalChars: number): string => {
   const dist = charIndex - cursorPos;
   if (dist < -2 || dist > 2) {
-    // Sage-to-lavender gradient based on position in text
     const t = totalChars > 1 ? charIndex / (totalChars - 1) : 0;
-    // Interpolate from sage (hsl 152,30%,62%) to lavender (hsl 260,40%,72%)
     const h = 152 + t * (260 - 152);
     const s = 30 + t * (40 - 30);
     const l = 62 + t * (72 - 62);
@@ -45,6 +39,17 @@ const getCharColor = (charIndex: number, cursorPos: number, totalChars: number):
   return SWEEP_COLORS[idx];
 };
 
+const CalendarIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+  </svg>
+);
+const SparklesIcon = () => (
+  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+  </svg>
+);
+
 const HighlightTagline = () => {
   const [cursor, setCursor] = useState(-3);
   const chars = TAGLINE.split('');
@@ -53,7 +58,7 @@ const HighlightTagline = () => {
     let animFrame: number;
     let start: number | null = null;
     const totalChars = chars.length;
-    const speed = 120; // ms per character (halved speed)
+    const speed = 120;
     const pauseMs = 3000;
     const sweepDuration = (totalChars + 6) * speed;
     const cycleDuration = sweepDuration + pauseMs;
@@ -66,12 +71,11 @@ const HighlightTagline = () => {
         const pos = Math.floor(elapsed / speed) - 3;
         setCursor(pos);
       } else {
-        setCursor(-10); // off screen — all white
+        setCursor(-10);
       }
       animFrame = requestAnimationFrame(animate);
     };
 
-    // Small initial delay
     const timeout = setTimeout(() => {
       animFrame = requestAnimationFrame(animate);
     }, 600);
@@ -145,11 +149,11 @@ const HeroSection = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center px-4 sm:px-0">
           <Button size="lg" className="w-full sm:w-auto" onClick={(e) => handleCTA(e, "booking")}>
-            <CalendarDays className="w-4 h-4" />
+            <CalendarIcon />
             Book Online Session
           </Button>
           <Button variant="glass" size="lg" className="w-full sm:w-auto text-white border-white/30" onClick={(e) => handleCTA(e, "services")}>
-            <Sparkles className="w-4 h-4" />
+            <SparklesIcon />
             View Services
           </Button>
         </div>
