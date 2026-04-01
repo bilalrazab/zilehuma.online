@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PasswordDialog from "@/components/PasswordDialog";
+import SEO from "@/components/SEO";
 
 const TAGS = ["All", "Mental Health", "Therapy", "Hypnotherapy", "Self-Care", "Relationships", "Wellness"];
 
