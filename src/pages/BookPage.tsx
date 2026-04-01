@@ -203,6 +203,20 @@ const BookPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Book a Therapy Session — Online & Islamabad"
+        description="Book an in-person or online therapy session with Clinical Psychologist Zil-e-Huma Suleman. Offering anxiety, depression, trauma, and hypnotherapy consultations across Pakistan."
+        canonical="https://zilehuma.online/book-appointment"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": "Clinical Psychology & Hypnotherapy Sessions",
+          "provider": { "@type": "Person", "name": "Zil-e-Huma Suleman" },
+          "areaServed": "Pakistan",
+          "url": "https://zilehuma.online/book-appointment",
+          "serviceType": ["Online Therapy", "Hypnotherapy", "Mental Health Counseling"]
+        }}
+      />
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
