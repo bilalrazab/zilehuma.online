@@ -12,6 +12,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PasswordDialog from "@/components/PasswordDialog";
 import SocialShare from "@/components/SocialShare";
+import SEO from "@/components/SEO";
 
 const db = supabase as any;
 
