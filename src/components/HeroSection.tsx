@@ -5,6 +5,21 @@ import { CalendarDays, Sparkles } from "lucide-react";
 
 const PetalCanvas = lazy(() => import("./PetalCanvas"));
 
+// Delay petal canvas to avoid blocking LCP
+const DelayedPetalCanvas = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), 2000);
+    return () => clearTimeout(id);
+  }, []);
+  if (!show) return null;
+  return (
+    <Suspense fallback={null}>
+      <PetalCanvas />
+    </Suspense>
+  );
+};
+
 const scrollToSection = (id: string) => {
   const el = document.getElementById(id);
   if (el) {
