@@ -4,6 +4,7 @@ import DashboardNav from "@/components/dashboard/DashboardNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import SEO from "@/components/SEO";
 
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
