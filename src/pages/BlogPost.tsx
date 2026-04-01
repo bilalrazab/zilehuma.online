@@ -165,16 +165,19 @@ const BlogPostPage = () => {
     "mainEntityOfPage": { "@type": "WebPage", "@id": `https://zilehuma.online/blog/${post.id}` },
     "wordCount": post.content.split(/\s+/).length,
     "articleSection": post.tag,
-    "speakable": {
-      "@type": "SpeakableSpecification",
-      "cssSelector": ["article h1", "article header p"]
-    }
   };
 
   return (
     <>
+      <SEO
+        title={post.title}
+        description={post.excerpt}
+        canonical={`https://zilehuma.online/blog/${post.id}`}
+        ogType="article"
+        ogImage={post.cover_image || 'https://zilehuma.online/og-image.png'}
+        schema={articleSchema}
+      />
       <Navbar />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <PasswordDialog open={showDeletePassword} onClose={() => setShowDeletePassword(false)} onSuccess={handleDeleteConfirm} action="delete this post" />
       <main className="min-h-screen pt-24 pb-12">
         <article className="max-w-3xl mx-auto px-4 sm:px-6">

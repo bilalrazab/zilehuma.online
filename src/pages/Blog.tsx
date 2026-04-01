@@ -90,6 +90,18 @@ const Blog = () => {
 
   return (
     <>
+      <SEO
+        title="Mental Health Articles & Resources"
+        description="Explore articles on mental health, anxiety, depression, hypnotherapy, and wellbeing written by Clinical Psychologist Zil-e-Huma Suleman."
+        canonical="https://zilehuma.online/blog"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "Mental Health Blog by Zil-e-Huma Suleman",
+          "url": "https://zilehuma.online/blog",
+          "author": { "@type": "Person", "name": "Zil-e-Huma Suleman" }
+        }}
+      />
       <Navbar />
       <PasswordDialog
         open={!!deleteTarget}

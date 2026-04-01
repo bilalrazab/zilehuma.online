@@ -68,6 +68,11 @@ const PrivacyPolicy = () => {
 
   return (
     <>
+      <SEO
+        title="Privacy Policy"
+        description="Read our privacy policy to understand how Zil-e-Huma Suleman protects your personal data and therapy records."
+        canonical="https://zilehuma.online/privacy-policy"
+      />
       <Navbar />
       <main className="pt-28 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-8">
