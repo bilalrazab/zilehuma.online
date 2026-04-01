@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { lazy, Suspense, useEffect } from "react";
+import SEO from "@/components/SEO";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -269,6 +270,20 @@ const ServicePage = () => {
 
   return (
     <>
+      <SEO
+        title={service.title}
+        description={service.subtitle}
+        canonical={`https://zilehuma.online/services/${slug}`}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "name": service.title,
+          "description": service.subtitle,
+          "provider": { "@type": "Person", "name": "Zil-e-Huma Suleman" },
+          "areaServed": "Pakistan",
+          "url": `https://zilehuma.online/services/${slug}`,
+        }}
+      />
       <Navbar />
       <main className="pt-24 pb-16 px-4">
         <article className="max-w-3xl mx-auto">

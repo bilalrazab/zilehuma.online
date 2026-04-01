@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { lazy, Suspense, useEffect } from "react";
+import SEO from "@/components/SEO";
 import {
   Shield, Lock, Eye, Cookie, UserCheck, Bell, Mail, Phone, MapPin,
   MessageCircle, Globe, BarChart3, FileText, CheckCircle2, AlertTriangle,
@@ -67,6 +68,11 @@ const PrivacyPolicy = () => {
 
   return (
     <>
+      <SEO
+        title="Privacy Policy"
+        description="Read our privacy policy to understand how Zil-e-Huma Suleman protects your personal data and therapy records."
+        canonical="https://zilehuma.online/privacy-policy"
+      />
       <Navbar />
       <main className="pt-28 pb-16 px-4">
         <div className="max-w-4xl mx-auto space-y-8">
