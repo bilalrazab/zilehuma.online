@@ -184,8 +184,8 @@ const Blog = () => {
                         </button>
                       )}
                     </div>
-                    <Link to={`/blog/${post.id}`} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body" aria-label={`Read full article: ${post.title}`}>
-                      Read <ArrowRight className="w-3 h-3" />
+                    <Link to={`/blog/${post.id}`} className="text-sm text-primary flex items-center gap-1 hover:gap-2 transition-all font-body">
+                      Read: {post.title.length > 25 ? post.title.slice(0, 25) + '…' : post.title} <ArrowRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </article>
