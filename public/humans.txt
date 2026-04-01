@@ -1,0 +1,14 @@
+/* TEAM */
+Psychologist: Zil-e-Huma Suleman
+Site: https://zilehuma.online
+Location: Islamabad, Pakistan
+
+/* DEVELOPER */
+Developer: Bilal Razab
+Site: https://bilalrazab.com
+
+/* TECHNOLOGY */
+Framework: React 18 + Vite 5
+Styling: Tailwind CSS
+Backend: Supabase
+Hosting: Lovable Cloud

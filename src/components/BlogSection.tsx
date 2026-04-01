@@ -5,13 +5,44 @@ import { ArrowRight, Clock, Tag } from "lucide-react";
 import { getPosts, type BlogPost } from "@/lib/blogStorage";
 import { Button } from "@/components/ui/button";
 
+const BlogSkeleton = () => (
+  <section id="blog" className="section-container">
+    <div className="text-center mb-12">
+      <h2 className="section-title">Blog</h2>
+      <p className="section-subtitle mx-auto">Insights on mental health, therapy, and well-being.</p>
+    </div>
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="glass-card flex flex-col animate-pulse">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-6 w-20 bg-muted rounded-full" />
+            <div className="h-4 w-14 bg-muted rounded" />
+          </div>
+          <div className="h-5 w-3/4 bg-muted rounded mb-2" />
+          <div className="h-4 w-full bg-muted rounded mb-1" />
+          <div className="h-4 w-2/3 bg-muted rounded mb-1" />
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+            <div className="h-3 w-20 bg-muted rounded" />
+            <div className="h-3 w-16 bg-muted rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
 const BlogSection = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getPosts().then((data) => setPosts(data.slice(0, 3)));
+    getPosts().then((data) => {
+      setPosts(data.slice(0, 3));
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
+  if (loading) return <BlogSkeleton />;
   if (posts.length === 0) return null;
 
   return <BlogSectionContent posts={posts} />;

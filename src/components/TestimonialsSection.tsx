@@ -154,11 +154,31 @@ const TestimonialsSection = () => {
           ))}
         </div>
 
-        {/* Mobile: Carousel */}
+        {/* Mobile: Carousel with swipe */}
         <div
           className="md:hidden relative"
           onMouseEnter={() => setIsAutoPlaying(false)}
           onMouseLeave={() => setIsAutoPlaying(true)}
+          onTouchStart={(e) => {
+            const touch = e.touches[0];
+            (e.currentTarget as any)._touchStartX = touch.clientX;
+            (e.currentTarget as any)._touchStartY = touch.clientY;
+            setIsAutoPlaying(false);
+          }}
+          onTouchEnd={(e) => {
+            const startX = (e.currentTarget as any)._touchStartX;
+            const startY = (e.currentTarget as any)._touchStartY;
+            if (startX == null) return;
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            const diffX = startX - endX;
+            const diffY = Math.abs(startY - endY);
+            if (Math.abs(diffX) > 50 && diffY < 100) {
+              if (diffX > 0) next();
+              else prev();
+            }
+            setIsAutoPlaying(true);
+          }}
         >
           <div className="overflow-hidden">
             <TestimonialCard
