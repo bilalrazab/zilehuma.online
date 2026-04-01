@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { lazy, Suspense, useEffect } from "react";
+import SEO from "@/components/SEO";
 import {
   Shield, Lock, Eye, Cookie, UserCheck, Bell, Mail, Phone, MapPin,
   MessageCircle, Globe, BarChart3, FileText, CheckCircle2, AlertTriangle,
