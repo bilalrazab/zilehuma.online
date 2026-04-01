@@ -10,6 +10,7 @@ import { CalendarDays, Clock, Send, ChevronLeft, ChevronRight, CheckCircle2, Loa
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, isToday, isBefore, startOfDay, startOfWeek, endOfWeek } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const db = supabase as any;
 
