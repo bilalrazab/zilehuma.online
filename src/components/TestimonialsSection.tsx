@@ -54,7 +54,7 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: Testimonial; 
         )}
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-heading font-semibold text-foreground">{testimonial.name}</h4>
+            <p className="font-heading font-semibold text-foreground text-base">{testimonial.name}</p>
             {testimonial.verified && (
               <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
             )}

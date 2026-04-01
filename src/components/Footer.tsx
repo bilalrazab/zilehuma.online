@@ -93,13 +93,13 @@ const Footer = () => {
       </div>
 
       <div className="flex items-center justify-center gap-3 mt-4 text-xs text-muted-foreground">
-        <a href="/privacy-policy" onClick={(e) => { e.preventDefault(); navigate("/privacy-policy"); }} className="hover:text-foreground transition-colors">Privacy Policy</a>
+        <a href="/privacy-policy" onClick={(e) => { e.preventDefault(); navigate("/privacy-policy"); }} className="underline underline-offset-2 hover:text-foreground transition-colors">Privacy Policy</a>
       </div>
 
       <p className="text-xs text-muted-foreground mt-4">© {new Date().getFullYear()} All rights reserved.</p>
       <p className="text-xs text-muted-foreground mt-2">
         Developed by{" "}
-        <a href="https://bilal-razab.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+        <a href="https://bilal-razab.netlify.app/" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:text-primary/80">
           Bilal Razab
         </a>
       </p>
