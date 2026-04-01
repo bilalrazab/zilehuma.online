@@ -116,6 +116,7 @@ const HeroSection = () => {
   return (
     <section id="home" className="relative min-h-[100svh] pt-28 sm:pt-32 lg:pt-36 pb-16 flex items-center justify-center overflow-hidden">
       <picture>
+        <source srcSet="/images/hero-bg-mobile.webp" type="image/webp" media="(max-width: 768px)" />
         <source srcSet="/images/hero-bg.webp" type="image/webp" />
         <img
           src="/images/hero-bg.jpg"
