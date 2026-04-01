@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import ScrollProgress from "@/components/ScrollProgress";
+import SEO from "@/components/SEO";
 
 const AboutSection = lazy(() => import("@/components/AboutSection"));
 const ServicesSection = lazy(() => import("@/components/ServicesSection"));
