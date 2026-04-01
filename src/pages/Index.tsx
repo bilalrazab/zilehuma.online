@@ -17,6 +17,27 @@ const Footer = lazy(() => import("@/components/Footer"));
 const Index = () => {
   return (
     <>
+      <SEO
+        title="Clinical Psychologist Islamabad & Online Therapy Pakistan"
+        description="Zil-e-Huma Suleman is a certified Clinical Psychologist in Islamabad offering therapy for anxiety, depression, trauma, and hypnotherapy sessions online across Pakistan."
+        canonical="https://zilehuma.online/"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": "Zil-e-Huma Suleman",
+          "jobTitle": "Clinical Psychologist",
+          "url": "https://zilehuma.online",
+          "image": "https://zilehuma.online/og-image.png",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "The Plazzo, Gulberg Greens",
+            "addressLocality": "Islamabad",
+            "addressRegion": "Islamabad Capital Territory",
+            "addressCountry": "PK"
+          },
+          "knowsAbout": ["Clinical Psychology", "Hypnotherapy", "Online Therapy", "Mental Health", "Anxiety", "Depression", "Trauma Therapy"]
+        }}
+      />
       <ScrollProgress />
       <Navbar />
       <main>
