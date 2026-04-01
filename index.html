@@ -6,8 +6,8 @@
     <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" /></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@400;700;900&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@400;700;900&display=swap" /></noscript>
     <title>Clinical Psychologist Islamabad | Zil-e-Huma Suleman</title>
     <meta name="description" content="Zil-e-Huma Suleman, a Clinical Psychologist in Islamabad, offers evidence-based therapy for anxiety, stress, and well-being. Find your safe space for healing. Book your session today!">
     <meta name="keywords" content="Clinical Psychologist Islamabad, Psychologist Pakistan, Mental Health Islamabad, Therapy Pakistan, CBT Islamabad, Hypnotherapy Pakistan, Zil-e-Huma Suleman, Trauma Therapy, Anxiety Treatment, Depression Support, Online Counseling Pakistan" />
@@ -331,7 +331,8 @@
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <!-- Preload hero image for faster LCP -->
-    <link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high">
+    <link rel="preload" as="image" href="/images/hero-bg-mobile.webp" type="image/webp" fetchpriority="high" media="(max-width: 768px)">
+    <link rel="preload" as="image" href="/images/hero-bg.webp" type="image/webp" fetchpriority="high" media="(min-width: 769px)">
 
     <!-- Critical inline CSS for instant first paint -->
     <style>
@@ -361,7 +362,11 @@
     <div id="root">
       <!-- SSR-like critical content for instant FCP -->
       <div class="hero-critical">
-        <img src="/images/hero-bg.webp" alt="Clinical Psychologist Islamabad" width="1200" height="675" fetchpriority="high">
+        <picture>
+          <source srcset="/images/hero-bg-mobile.webp" type="image/webp" media="(max-width: 768px)">
+          <source srcset="/images/hero-bg.webp" type="image/webp">
+          <img src="/images/hero-bg.jpg" alt="Clinical Psychologist Islamabad" width="1200" height="675" fetchpriority="high">
+        </picture>
         <div class="overlay"></div>
         <div class="hero-text">
           <p style="font-size:.75rem;text-transform:uppercase;letter-spacing:.2em;opacity:.8;margin-bottom:.75rem;">Zil-e-Huma Suleman</p>
