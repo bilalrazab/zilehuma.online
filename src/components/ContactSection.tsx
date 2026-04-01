@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
-import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle, ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
+
+const MAPS_URL = "https://maps.app.goo.gl/eWJniqQqGSQQ16im9";
+const EMBED_URL = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13283.5!2d73.0800!3d33.6350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df95908d675de1%3A0x7f4e6cd1b3b2e4a2!2sGulberg+Greens%2C+Islamabad!5e0!3m2!1sen!2spk!4v1700000000000";
 
 const ContactSection = () => {
   const ref = useScrollReveal();
+  const [mapError, setMapError] = useState(false);
 
   return (
     <section id="contact" className="section-container">
@@ -18,9 +23,9 @@ const ContactSection = () => {
             {[
               { icon: Mail, label: "Email", value: "zilehumaconsultant@gmail.com", href: "mailto:zilehumaconsultant@gmail.com" },
               { icon: Phone, label: "Phone", value: "+92 328 1022334", href: "tel:+923281022334" },
-              { icon: MapPin, label: "Location", value: "The Plazzo, Gulberg Greens, Islamabad", href: "https://maps.app.goo.gl/eWJniqQqGSQQ16im9" },
+              { icon: MapPin, label: "Location", value: "The Plazzo, Gulberg Greens, Islamabad", href: MAPS_URL },
             ].map((c) => (
-              <a key={c.label} href={c.href} className="flex items-start gap-4 group">
+              <a key={c.label} href={c.href} className="flex items-start gap-4 group" target={c.label === "Location" ? "_blank" : undefined} rel={c.label === "Location" ? "noopener noreferrer" : undefined}>
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                   <c.icon className="w-5 h-5 text-primary" />
                 </div>
@@ -46,13 +51,34 @@ const ContactSection = () => {
           </div>
 
           <div className="glass-card p-2 overflow-hidden">
-            <iframe
-              title="Location Map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13283.5!2d73.0800!3d33.6350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df95908d675de1%3A0x7f4e6cd1b3b2e4a2!2sGulberg+Greens%2C+Islamabad!5e0!3m2!1sen!2spk!4v1700000000000"
-              className="w-full h-full min-h-[280px] rounded-2xl"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+            {!mapError ? (
+              <iframe
+                title="Location Map"
+                src={EMBED_URL}
+                className="w-full h-full min-h-[280px] rounded-2xl"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                onError={() => setMapError(true)}
+              />
+            ) : null}
+            {/* Static fallback always visible behind/instead of iframe */}
+            {mapError && (
+              <a
+                href={MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center justify-center h-full min-h-[280px] rounded-2xl bg-muted/50 hover:bg-muted/70 transition-colors gap-3 p-6 text-center"
+              >
+                <MapPin className="w-10 h-10 text-primary" />
+                <div>
+                  <p className="font-heading font-semibold text-foreground">The Plazzo, Gulberg Greens</p>
+                  <p className="text-sm text-muted-foreground">Islamabad, Pakistan</p>
+                </div>
+                <span className="text-sm text-primary flex items-center gap-1 mt-2">
+                  Open in Google Maps <ExternalLink className="w-3.5 h-3.5" />
+                </span>
+              </a>
+            )}
           </div>
         </div>
       </div>
