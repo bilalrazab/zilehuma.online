@@ -161,7 +161,8 @@ const ClientFilePage = () => {
           },
         });
       } catch (err) { console.error('Email send error:', err); }
-      sendWhatsApp(client.phone, `📋 New Task Assigned\n\nHi ${client.full_name?.split(' ')[0]},\nYou have a new task: "${taskForm.title}"\n${taskForm.due_date ? `📅 Due: ${taskForm.due_date}` : ''}\nPriority: ${taskForm.priority}\n\n— Zil-e-Huma's Clinic 🌸`);
+    }
+    sendWhatsApp(client?.phone, `📋 New Task Assigned\n\nHi ${client?.full_name?.split(' ')[0]},\nYou have a new task: "${taskForm.title}"\n${taskForm.due_date ? `📅 Due: ${taskForm.due_date}` : ''}\nPriority: ${taskForm.priority}\n\n— Zil-e-Huma's Clinic 🌸`);
     setTaskOpen(false); setTaskForm({ title: '', type: 'follow_up', due_date: '', priority: 'medium', notes: '' });
     toast({ title: "Task created" }); load();
   };
