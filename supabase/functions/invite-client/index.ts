@@ -135,14 +135,21 @@ Deno.serve(async (req) => {
       userId = existingUser.id
       console.log('Existing auth user found:', userId, '— linking as client')
 
-      // Send a password reset so they can set credentials and log in
-      const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'recovery',
-        email,
-        options: { redirectTo: redirect_url }
-      })
-      if (resetError) {
-        console.warn('Recovery link generation failed (non-blocking):', resetError.message)
+      // Send a password reset email so they can set credentials and log in
+      // Use anon client so the auth system actually delivers the email
+      const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')
+      if (anonKey) {
+        const anonClient = createClient(supabaseUrl, anonKey)
+        const { error: resetError } = await anonClient.auth.resetPasswordForEmail(email, {
+          redirectTo: redirect_url
+        })
+        if (resetError) {
+          console.warn('Recovery email failed (non-blocking):', resetError.message)
+        } else {
+          console.log('Recovery email sent successfully to:', email)
+        }
+      } else {
+        console.warn('No anon key available, skipping recovery email')
       }
     } else {
       // New user — send invite
