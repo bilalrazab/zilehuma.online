@@ -71,7 +71,7 @@ const ClientsPage = () => {
   };
 
   const resetInviteForm = () => {
-    setForm({ full_name: '', email: '' });
+    setForm({ full_name: '', email: '', phone: '' });
     setInviteState('form');
     setInviteError('');
     setInvitedEmail('');
