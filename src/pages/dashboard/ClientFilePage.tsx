@@ -308,6 +308,10 @@ const ClientFilePage = () => {
     // Update checklist
     await db.from('client_checklists').update({ first_session_done: true }).eq('client_id', id);
 
+    // WhatsApp summary
+    const nextMsg = endSessionNextDate ? `\n📅 Next session: ${format(new Date(endSessionNextDate), 'MMMM d, yyyy h:mm a')}` : '';
+    sendWhatsApp(client?.phone, `✅ Session Complete\n\nHi ${client?.full_name?.split(' ')[0]},\nYour session today has been completed.${nextMsg}\n\nThank you for your commitment to your well-being! 💚\n\n— Zil-e-Huma's Clinic 🌸`);
+
     setEndSessionDialog(null);
     toast({ title: "Session completed — note saved, payment recorded" }); load();
   };
