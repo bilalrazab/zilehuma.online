@@ -96,7 +96,6 @@ const ResourcesPage = () => {
     }
     // WhatsApp notification
     const client = clients.find((c: any) => c.id === assignClientId);
-    const resource = resources.find(r => r.id === assignOpen);
     sendWhatsApp(client?.phone, `📚 New Resource Assigned\n\nHi ${client?.full_name?.split(' ')[0]},\nA new resource has been shared with you: "${resource?.title || 'Resource'}"\n${assignDueDate ? `📅 Due: ${assignDueDate}` : ''}\n\n— Zil-e-Huma's Clinic 🌸`);
     setAssignOpen(null); setAssignClientId(''); setAssignDueDate('');
     toast({ title: "Resource assigned & homework task created" }); load();
