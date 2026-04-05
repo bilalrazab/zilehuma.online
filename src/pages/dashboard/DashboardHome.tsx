@@ -120,13 +120,24 @@ const DoctorDashboard = () => {
     try {
       await db.from('appointments').update({ status: 'scheduled' }).eq('id', session.id);
       if (session.client_id) {
-        const { data: cl } = await db.from('clients').select('user_id, full_name').eq('id', session.client_id).single();
+        const { data: cl } = await db.from('clients').select('user_id, full_name, phone').eq('id', session.client_id).single();
         if (cl?.user_id) {
           await db.from('notifications').insert({
             user_id: cl.user_id, title: 'Session Approved ✅',
             message: `Your session for ${format(parseISO(session.start_time), 'MMM d, h:mm a')} has been approved.`,
             type: 'info', link: '/dashboard/sessions',
           });
+        }
+        // WhatsApp notification
+        if (cl?.phone) {
+          try {
+            await supabase.functions.invoke('send-whatsapp', {
+              body: {
+                to: cl.phone,
+                text: `✅ Session Confirmed!\n\nHi ${cl.full_name?.split(' ')[0]},\nYour session has been approved.\n\n📅 ${format(parseISO(session.start_time), 'MMMM d, yyyy')}\n🕐 ${format(parseISO(session.start_time), 'h:mm a')}\n\n— Zil-e-Huma's Clinic 🌸`,
+              },
+            });
+          } catch {}
         }
       }
       toast({ title: "✅ Session approved" }); load();

@@ -17,3 +17,5 @@ project_id = "stdchygflgjzxpteizcw"
     verify_jwt = false
   [functions.google-calendar-sync]
     verify_jwt = true
+  [functions.send-whatsapp]
+    verify_jwt = false
