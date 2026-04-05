@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, BookOpen, FileText, Video, Headphones, Search, ExternalLink, Trash2, Edit2, Users, Send, CheckCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 import { format, parseISO } from "date-fns";
 
 const db = supabase as any;
@@ -93,6 +94,10 @@ const ResourcesPage = () => {
         type: 'homework', priority: 'medium', due_date: assignDueDate || null, created_by: user?.id,
       });
     }
+    // WhatsApp notification
+    const client = clients.find((c: any) => c.id === assignClientId);
+    const resource = resources.find(r => r.id === assignOpen);
+    sendWhatsApp(client?.phone, `📚 New Resource Assigned\n\nHi ${client?.full_name?.split(' ')[0]},\nA new resource has been shared with you: "${resource?.title || 'Resource'}"\n${assignDueDate ? `📅 Due: ${assignDueDate}` : ''}\n\n— Zil-e-Huma's Clinic 🌸`);
     setAssignOpen(null); setAssignClientId(''); setAssignDueDate('');
     toast({ title: "Resource assigned & homework task created" }); load();
   };
