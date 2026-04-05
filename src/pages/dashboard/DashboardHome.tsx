@@ -141,7 +141,7 @@ const DoctorDashboard = () => {
   const rejectRequest = async (session: any) => {
     try {
       await db.from('appointments').update({ status: 'cancelled' }).eq('id', session.id);
-      const { data: cl } = await db.from('clients').select('user_id').eq('id', session.client_id).single();
+      const { data: cl } = await db.from('clients').select('user_id, phone, full_name').eq('id', session.client_id).single();
       if (cl?.user_id) {
         await db.from('notifications').insert({
           user_id: cl.user_id, title: 'Session Request Declined',
@@ -149,6 +149,7 @@ const DoctorDashboard = () => {
           type: 'info', link: '/dashboard/sessions',
         });
       }
+      sendWhatsApp(cl?.phone, `Hi ${cl?.full_name?.split(' ')[0]},\n\nUnfortunately, your session request for ${format(parseISO(session.start_time), 'MMM d')} is not available. Please try booking another time.\n\n— Zil-e-Huma's Clinic 🌸`);
       toast({ title: "Request declined" }); load();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
