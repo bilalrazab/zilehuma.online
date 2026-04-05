@@ -130,16 +130,7 @@ const DoctorDashboard = () => {
           });
         }
         // WhatsApp notification
-        if (cl?.phone) {
-          try {
-            await supabase.functions.invoke('send-whatsapp', {
-              body: {
-                to: cl.phone,
-                text: `✅ Session Confirmed!\n\nHi ${cl.full_name?.split(' ')[0]},\nYour session has been approved.\n\n📅 ${format(parseISO(session.start_time), 'MMMM d, yyyy')}\n🕐 ${format(parseISO(session.start_time), 'h:mm a')}\n\n— Zil-e-Huma's Clinic 🌸`,
-              },
-            });
-          } catch {}
-        }
+        sendWhatsApp(cl?.phone, `✅ Session Confirmed!\n\nHi ${cl?.full_name?.split(' ')[0]},\nYour session has been approved.\n\n📅 ${format(parseISO(session.start_time), 'MMMM d, yyyy')}\n🕐 ${format(parseISO(session.start_time), 'h:mm a')}\n\n— Zil-e-Huma's Clinic 🌸`);
       }
       toast({ title: "✅ Session approved" }); load();
     } catch (err: any) {
