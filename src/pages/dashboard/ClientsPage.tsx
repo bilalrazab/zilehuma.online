@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 
 const db = supabase as any;
 
@@ -122,6 +123,10 @@ const ClientsPage = () => {
           title: "✅ Invitation sent!",
           description: `A setup email has been sent to ${form.email}`,
         });
+        // WhatsApp welcome message
+        if (form.phone) {
+          sendWhatsApp(form.phone, `🌸 Welcome to Zil-e-Huma's Clinic!\n\nHi ${form.full_name?.split(' ')[0]},\nYou've been invited to join our client portal. Please check your email (${form.email}) for the setup link.\n\nWe look forward to working with you! 💚\n\n— Zil-e-Huma's Clinic`);
+        }
         load();
       } else {
         throw new Error('Unexpected response from server');
