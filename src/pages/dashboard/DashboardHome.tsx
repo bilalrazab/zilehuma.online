@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { format, parseISO, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 
 const db = supabase as any;

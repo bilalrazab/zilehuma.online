@@ -14,6 +14,7 @@ import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Video, Trash2, Edit2, C
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, addMonths, subMonths, isToday, startOfWeek, endOfWeek } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 
 const db = supabase as any;
 

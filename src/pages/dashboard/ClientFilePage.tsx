@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 
 const db = supabase as any;
 
