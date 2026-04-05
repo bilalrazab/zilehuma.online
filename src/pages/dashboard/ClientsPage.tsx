@@ -235,6 +235,10 @@ const ClientsPage = () => {
                     <Label className="text-xs font-medium">Email <span className="text-destructive">*</span></Label>
                     <Input type="email" placeholder="client@email.com" value={form.email} onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setInviteError(''); }} disabled={inviteState === 'sending'} />
                   </div>
+                  <div>
+                    <Label className="text-xs font-medium">Phone (for WhatsApp)</Label>
+                    <Input type="tel" placeholder="+92 3XX XXXXXXX" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} disabled={inviteState === 'sending'} />
+                  </div>
                 </div>
 
                 <Button onClick={handleInvite} disabled={inviteState === 'sending'} className="w-full">
