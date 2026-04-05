@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { format, parseISO, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 
 const db = supabase as any;
@@ -129,16 +130,7 @@ const DoctorDashboard = () => {
           });
         }
         // WhatsApp notification
-        if (cl?.phone) {
-          try {
-            await supabase.functions.invoke('send-whatsapp', {
-              body: {
-                to: cl.phone,
-                text: `✅ Session Confirmed!\n\nHi ${cl.full_name?.split(' ')[0]},\nYour session has been approved.\n\n📅 ${format(parseISO(session.start_time), 'MMMM d, yyyy')}\n🕐 ${format(parseISO(session.start_time), 'h:mm a')}\n\n— Zil-e-Huma's Clinic 🌸`,
-              },
-            });
-          } catch {}
-        }
+        sendWhatsApp(cl?.phone, `✅ Session Confirmed!\n\nHi ${cl?.full_name?.split(' ')[0]},\nYour session has been approved.\n\n📅 ${format(parseISO(session.start_time), 'MMMM d, yyyy')}\n🕐 ${format(parseISO(session.start_time), 'h:mm a')}\n\n— Zil-e-Huma's Clinic 🌸`);
       }
       toast({ title: "✅ Session approved" }); load();
     } catch (err: any) {
@@ -149,7 +141,7 @@ const DoctorDashboard = () => {
   const rejectRequest = async (session: any) => {
     try {
       await db.from('appointments').update({ status: 'cancelled' }).eq('id', session.id);
-      const { data: cl } = await db.from('clients').select('user_id').eq('id', session.client_id).single();
+      const { data: cl } = await db.from('clients').select('user_id, phone, full_name').eq('id', session.client_id).single();
       if (cl?.user_id) {
         await db.from('notifications').insert({
           user_id: cl.user_id, title: 'Session Request Declined',
@@ -157,6 +149,7 @@ const DoctorDashboard = () => {
           type: 'info', link: '/dashboard/sessions',
         });
       }
+      sendWhatsApp(cl?.phone, `Hi ${cl?.full_name?.split(' ')[0]},\n\nUnfortunately, your session request for ${format(parseISO(session.start_time), 'MMM d')} is not available. Please try booking another time.\n\n— Zil-e-Huma's Clinic 🌸`);
       toast({ title: "Request declined" }); load();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });

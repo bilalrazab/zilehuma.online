@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsApp } from "@/lib/whatsapp";
 
 const db = supabase as any;
 
@@ -161,6 +162,7 @@ const ClientFilePage = () => {
         });
       } catch (err) { console.error('Email send error:', err); }
     }
+    sendWhatsApp(client?.phone, `📋 New Task Assigned\n\nHi ${client?.full_name?.split(' ')[0]},\nYou have a new task: "${taskForm.title}"\n${taskForm.due_date ? `📅 Due: ${taskForm.due_date}` : ''}\nPriority: ${taskForm.priority}\n\n— Zil-e-Huma's Clinic 🌸`);
     setTaskOpen(false); setTaskForm({ title: '', type: 'follow_up', due_date: '', priority: 'medium', notes: '' });
     toast({ title: "Task created" }); load();
   };
@@ -203,8 +205,8 @@ const ClientFilePage = () => {
           },
         });
       } catch (err) { console.error('Email send error:', err); }
+      sendWhatsApp(client.phone, `📅 Session Scheduled\n\nHi ${client.full_name?.split(' ')[0]},\nYour session has been scheduled.\n\n📅 ${format(start, 'MMMM d, yyyy')}\n🕐 ${format(start, 'h:mm a')}\n📋 ${sessionForm.type}\n⏱ ${sessionForm.duration_minutes} minutes\n\n— Zil-e-Huma's Clinic 🌸`);
     }
-    setSessionOpen(false); setSessionForm({ start_time: '', duration_minutes: 50, type: 'in-person', title: 'Session', meeting_link: '', notes: '' });
     toast({ title: "Session scheduled" }); load();
   };
 
@@ -252,6 +254,7 @@ const ClientFilePage = () => {
         type: 'info', link: '/dashboard/progress',
       });
     }
+    sendWhatsApp(client?.phone, `📚 New Resource Assigned\n\nHi ${client?.full_name?.split(' ')[0]},\nA new resource has been shared with you: "${allResources.find(r => r.id === assignResourceId)?.title || 'Resource'}"\n${assignDueDate ? `📅 Due: ${assignDueDate}` : ''}\n\n— Zil-e-Huma's Clinic 🌸`);
     setAssignResourceOpen(false); setAssignResourceId(''); setAssignDueDate('');
     toast({ title: "Resource assigned" }); load();
   };
@@ -304,6 +307,10 @@ const ClientFilePage = () => {
     await db.from('clients').update({ last_session_date: new Date().toISOString().split('T')[0] }).eq('id', id);
     // Update checklist
     await db.from('client_checklists').update({ first_session_done: true }).eq('client_id', id);
+
+    // WhatsApp summary
+    const nextMsg = endSessionNextDate ? `\n📅 Next session: ${format(new Date(endSessionNextDate), 'MMMM d, yyyy h:mm a')}` : '';
+    sendWhatsApp(client?.phone, `✅ Session Complete\n\nHi ${client?.full_name?.split(' ')[0]},\nYour session today has been completed.${nextMsg}\n\nThank you for your commitment to your well-being! 💚\n\n— Zil-e-Huma's Clinic 🌸`);
 
     setEndSessionDialog(null);
     toast({ title: "Session completed — note saved, payment recorded" }); load();
