@@ -259,6 +259,29 @@ Deno.serve(async (req) => {
       link: "/dashboard/calendar",
     });
 
+    // WhatsApp confirmation to client (best-effort)
+    if (data.client_phone) {
+      try {
+        const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID");
+        const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN");
+        if (phoneNumberId && accessToken) {
+          const formattedPhone = data.client_phone.replace(/[\s\-\(\)]/g, "").replace(/^0/, "92");
+          await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messaging_product: "whatsapp",
+              to: formattedPhone,
+              type: "text",
+              text: { body: `🌸 Booking Request Received!\n\nHi ${data.client_name.split(" ")[0]},\nYour session request for ${data.date} at ${data.time} has been received.\n\nWe'll confirm shortly once approved.\n\n${portalInviteSent ? "📧 Check your email to set up your portal access.\n\n" : ""}— Zil-e-Huma's Clinic 💚` },
+            }),
+          });
+        }
+      } catch (waErr) {
+        console.error("WhatsApp send failed (non-blocking):", waErr);
+      }
+    }
+
     return new Response(JSON.stringify({
       success: true,
       appointment_id: appointment!.id,
