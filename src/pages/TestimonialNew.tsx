@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, ArrowLeft, Upload, X, CheckCircle2, MapPin, User, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AvatarCropper from "@/components/AvatarCropper";
 
 const TestimonialNew = () => {
   const navigate = useNavigate();
