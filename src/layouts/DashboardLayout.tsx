@@ -14,21 +14,13 @@ const db = supabase as any;
 const DashboardLayout = () => {
   const { user, role, roleLoaded, loading } = useAuth();
   const location = useLocation();
-  const [onboardingCheck, setOnboardingCheck] = useState<"checking" | "ok" | "needs_onboarding">("checking");
+  const [onboardingCheck, setOnboardingCheck] = useState<"checking" | "ok" | "needs_onboarding">("ok");
 
   useEffect(() => {
     if (!user || loading || !roleLoaded) return;
-    // Only check for client role users
-    if (role && role !== "client") {
-      setOnboardingCheck("ok");
-      return;
-    }
-
-    // If no role at all (e.g. orphan user), skip onboarding check
-    if (!role) {
-      setOnboardingCheck("ok");
-      return;
-    }
+    // Only run onboarding check for client role
+    if (role !== "client") return;
+    setOnboardingCheck("checking");
 
     const check = async () => {
       try {
@@ -53,7 +45,7 @@ const DashboardLayout = () => {
     check();
   }, [user, role, roleLoaded, loading]);
 
-  if (loading || !roleLoaded || onboardingCheck === "checking") {
+  if (loading || !roleLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 w-64">
@@ -67,9 +59,20 @@ const DashboardLayout = () => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // Redirect clients who haven't completed onboarding (but not if already on onboarding page)
-  if (onboardingCheck === "needs_onboarding" && location.pathname !== "/dashboard/onboarding") {
+  if (role === "client" && onboardingCheck === "needs_onboarding" && location.pathname !== "/dashboard/onboarding") {
     return <Navigate to="/dashboard/onboarding" replace />;
+  }
+
+  if (role === "client" && onboardingCheck === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="space-y-4 w-64">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-8 w-1/2" />
+        </div>
+      </div>
+    );
   }
 
   return (
