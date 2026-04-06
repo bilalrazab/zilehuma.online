@@ -133,7 +133,6 @@ const TestimonialNew = () => {
               onClose={() => { setShowCropper(false); setCropSrc(""); }}
               onCropped={handleCropped}
             />
-            </div>
 
             <div>
               <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2"><User className="w-4 h-4 text-primary" /> Full Name *</label>
