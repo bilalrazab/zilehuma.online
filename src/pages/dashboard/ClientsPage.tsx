@@ -55,6 +55,8 @@ const ClientsPage = () => {
   const [form, setForm] = useState({
     full_name: '', email: '', phone: ''
   });
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { load(); }, []);
 
