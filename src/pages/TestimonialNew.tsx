@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, ArrowLeft, Upload, X, CheckCircle2, MapPin, User, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AvatarCropper from "@/components/AvatarCropper";
 
 const TestimonialNew = () => {
   const navigate = useNavigate();
@@ -20,17 +21,29 @@ const TestimonialNew = () => {
   const [avatar, setAvatar] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [cropSrc, setCropSrc] = useState("");
+  const [showCropper, setShowCropper] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Image too large", description: "Maximum 2MB allowed.", variant: "destructive" });
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Maximum 5MB allowed.", variant: "destructive" });
       return;
     }
     const reader = new FileReader();
-    reader.onloadend = () => setAvatar(reader.result as string);
+    reader.onloadend = () => {
+      setCropSrc(reader.result as string);
+      setShowCropper(true);
+    };
     reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropped = (croppedDataUrl: string) => {
+    setAvatar(croppedDataUrl);
+    setShowCropper(false);
+    setCropSrc("");
   };
 
   const validate = () => {
@@ -110,9 +123,16 @@ const TestimonialNew = () => {
               </div>
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">Profile Photo</p>
-                <p>Optional · Max 2MB</p>
+                <p>Optional · Max 5MB</p>
               </div>
             </div>
+
+            <AvatarCropper
+              open={showCropper}
+              imageSrc={cropSrc}
+              onClose={() => { setShowCropper(false); setCropSrc(""); }}
+              onCropped={handleCropped}
+            />
 
             <div>
               <label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2"><User className="w-4 h-4 text-primary" /> Full Name *</label>
