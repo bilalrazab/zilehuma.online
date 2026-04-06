@@ -73,7 +73,6 @@ const DashboardLayout = () => {
         </div>
       </div>
     );
-    return <Navigate to="/dashboard/onboarding" replace />;
   }
 
   return (
