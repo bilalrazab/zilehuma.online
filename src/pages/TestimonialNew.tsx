@@ -21,17 +21,29 @@ const TestimonialNew = () => {
   const [avatar, setAvatar] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [cropSrc, setCropSrc] = useState("");
+  const [showCropper, setShowCropper] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Image too large", description: "Maximum 2MB allowed.", variant: "destructive" });
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Image too large", description: "Maximum 5MB allowed.", variant: "destructive" });
       return;
     }
     const reader = new FileReader();
-    reader.onloadend = () => setAvatar(reader.result as string);
+    reader.onloadend = () => {
+      setCropSrc(reader.result as string);
+      setShowCropper(true);
+    };
     reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropped = (croppedDataUrl: string) => {
+    setAvatar(croppedDataUrl);
+    setShowCropper(false);
+    setCropSrc("");
   };
 
   const validate = () => {
