@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: roleRows } = await (supabase as any).from('user_roles').select('role').eq('user_id', userId);
       const roleData = roleRows?.find((r: any) => r.role === 'super_admin' || r.role === 'doctor') || roleRows?.[0] || null;
       setRole(roleData?.role || null);
+      setRoleLoaded(true);
 
       let { data: profileData } = await (supabase as any).from('profiles').select('*').eq('id', userId).single();
       if (!profileData) {
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(profileData);
     } catch (err) {
       console.error('Error fetching user data:', err);
+      setRoleLoaded(true);
     }
   };
 
@@ -63,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }, 0);
       } else {
         setRole(null);
+        setRoleLoaded(false);
         setProfile(null);
       }
       setLoading(false);
