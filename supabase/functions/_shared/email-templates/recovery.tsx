@@ -55,7 +55,7 @@ export const RecoveryEmail = ({
 
           <Section style={tipBox}>
             <Text style={tipText}>
-              ⏳ This link expires in 1 hour for your security.
+              ⏳ This link stays valid for 24 hours for your security.
             </Text>
           </Section>
 

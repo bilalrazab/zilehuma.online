@@ -66,7 +66,11 @@ const ClientOnboarding = () => {
   useEffect(() => {
     const loadClient = async () => {
       if (!user?.id) return;
-      const { data } = await db.from('clients').select('*').eq('user_id', user.id).single();
+      const { data, error } = await db.from('clients').select('*').eq('user_id', user.id).maybeSingle();
+      if (error) {
+        console.error('Failed to load client onboarding record:', error);
+        return;
+      }
       if (data) {
         setClientId(data.id);
         setForm(prev => normalizeClientProfileValues({

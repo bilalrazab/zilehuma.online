@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { KeyRound, Loader2 } from "lucide-react";
+import { shouldRouteToOnboarding } from "@/lib/clientLifecycle";
 
 const ResetPassword = () => {
+  const db = supabase as any;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,8 +70,41 @@ const ResetPassword = () => {
     if (error) {
       toast({ title: "Error setting password", description: error.message, variant: "destructive" });
     } else {
+      let destination = "/dashboard";
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user?.id) {
+          const { data: clientRecord, error: clientError } = await db
+            .from('clients')
+            .select('id, user_id, status, full_name, phone, gender, date_of_birth, address, emergency_contact, emergency_phone, notes')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (clientError) throw clientError;
+
+          if (clientRecord?.id && clientRecord.status === 'pending_activation') {
+            const { error: statusError } = await db
+              .from('clients')
+              .update({ status: 'pending_profile', updated_at: new Date().toISOString() })
+              .eq('id', clientRecord.id);
+
+            if (!statusError) {
+              clientRecord.status = 'pending_profile';
+            }
+          }
+
+          if (clientRecord && shouldRouteToOnboarding(clientRecord)) {
+            destination = "/dashboard/onboarding";
+          }
+        }
+      } catch (clientStateError) {
+        console.error('Failed to update client onboarding state:', clientStateError);
+      }
+
       toast({ title: "Password set successfully!", description: "Welcome to your portal." });
-      navigate("/dashboard");
+      navigate(destination);
     }
     setIsLoading(false);
   };

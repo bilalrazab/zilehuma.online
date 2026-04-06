@@ -47,6 +47,7 @@ const BookPage = () => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [bookingMeta, setBookingMeta] = useState<{ portalInviteSent?: boolean; portalSetupRequired?: boolean } | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -159,6 +160,10 @@ const BookPage = () => {
         throw new Error(result.error || "Booking failed");
       }
 
+      setBookingMeta({
+        portalInviteSent: result.portal_invite_sent,
+        portalSetupRequired: result.portal_setup_required,
+      });
       setSubmitted(true);
     } catch (err: any) {
       toast({ title: "Booking failed", description: err.message, variant: "destructive" });
@@ -187,8 +192,18 @@ const BookPage = () => {
               Your session request for <strong>{format(selectedDate!, "MMMM d, yyyy")}</strong> at <strong>{selectedTime}</strong> has been received. 
               You'll receive a confirmation once your therapist approves the booking.
             </p>
+            {bookingMeta?.portalInviteSent && (
+              <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground text-left">
+                We also sent a secure setup email to <strong>{form.email}</strong> so you can create your portal password and complete your profile.
+              </div>
+            )}
+            {!bookingMeta?.portalInviteSent && bookingMeta?.portalSetupRequired && (
+              <div className="rounded-2xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground text-left">
+                Your portal access is being prepared. If you do not receive the setup email, the clinic can re-send it for you.
+              </div>
+            )}
             <div className="pt-4 space-y-2">
-              <Button onClick={() => { setSubmitted(false); setStep(1); setSelectedDate(null); setSelectedTime(""); }} variant="outline" className="w-full">
+              <Button onClick={() => { setSubmitted(false); setBookingMeta(null); setStep(1); setSelectedDate(null); setSelectedTime(""); }} variant="outline" className="w-full">
                 Book Another Session
               </Button>
               <Link to="/">
