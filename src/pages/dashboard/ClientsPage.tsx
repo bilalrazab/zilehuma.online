@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info } from "lucide-react";
+import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { sendWhatsApp } from "@/lib/whatsapp";
@@ -54,6 +55,8 @@ const ClientsPage = () => {
   const [form, setForm] = useState({
     full_name: '', email: '', phone: ''
   });
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -141,6 +144,25 @@ const ClientsPage = () => {
         description: msg,
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-client', {
+        body: { client_id: deleteTarget.id, delete_auth_user: true }
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Client deleted", description: `${deleteTarget.full_name} and all related records have been removed.` });
+      setDeleteTarget(null);
+      load();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -313,9 +335,15 @@ const ClientsPage = () => {
                       </div>
                       {isLead && c.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Source: {c.notes}</p>}
                     </div>
-                    <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
-                      {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
+                        {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
+                      </Badge>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -323,6 +351,24 @@ const ClientsPage = () => {
           })}
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Client</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleteTarget?.full_name}</strong> and all their records (sessions, notes, payments, messages, tasks, etc.). Their login account will also be removed. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClient} disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Deleting...</> : 'Delete Permanently'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
