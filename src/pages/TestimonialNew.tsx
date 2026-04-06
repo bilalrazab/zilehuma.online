@@ -123,8 +123,16 @@ const TestimonialNew = () => {
               </div>
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium text-foreground">Profile Photo</p>
-                <p>Optional · Max 2MB</p>
+                <p>Optional · Max 5MB</p>
               </div>
+            </div>
+
+            <AvatarCropper
+              open={showCropper}
+              imageSrc={cropSrc}
+              onClose={() => { setShowCropper(false); setCropSrc(""); }}
+              onCropped={handleCropped}
+            />
             </div>
 
             <div>
