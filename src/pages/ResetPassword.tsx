@@ -18,8 +18,13 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        setIsReady(true);
+        setChecking(false);
+      }
+      // Also handle when the token was already exchanged and user has a session
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
         setIsReady(true);
         setChecking(false);
       }
@@ -31,8 +36,16 @@ const ResetPassword = () => {
       setIsReady(true);
     }
 
+    // Also check if there's already a session (token already processed)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsReady(true);
+        setChecking(false);
+      }
+    });
+
     // Give auth state change a moment to fire
-    const timeout = setTimeout(() => setChecking(false), 2000);
+    const timeout = setTimeout(() => setChecking(false), 3000);
 
     return () => {
       subscription.unsubscribe();
