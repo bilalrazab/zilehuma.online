@@ -56,6 +56,9 @@ const BookPage = () => {
     const loadAvailability = async () => {
       const { data } = await db.from("doctor_availability").select("*").eq("is_available", true);
       setAvailability(data || []);
+      if (!data || data.length === 0) {
+        console.log("No doctor availability configured — calendar will show no available dates.");
+      }
     };
     loadAvailability();
   }, []);
@@ -279,6 +282,15 @@ const BookPage = () => {
               <h2 className="text-2xl font-heading font-bold">Choose Date & Time</h2>
               <p className="text-muted-foreground mt-1">Select an available slot that works for you</p>
             </div>
+
+            {availability.length === 0 && (
+              <Card className="border-amber-400/50 bg-amber-50/50 dark:bg-amber-950/10">
+                <CardContent className="p-4 text-center text-sm text-muted-foreground">
+                  <p className="font-medium text-amber-700 dark:text-amber-400">No available slots at this time</p>
+                  <p className="mt-1">The therapist has not configured availability yet. Please check back later or contact the clinic directly.</p>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Calendar */}

@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: AppRole;
+  roleLoaded: boolean;
   profile: any;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<any>;
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole>(null);
+  const [roleLoaded, setRoleLoaded] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: roleRows } = await (supabase as any).from('user_roles').select('role').eq('user_id', userId);
       const roleData = roleRows?.find((r: any) => r.role === 'super_admin' || r.role === 'doctor') || roleRows?.[0] || null;
       setRole(roleData?.role || null);
+      setRoleLoaded(true);
 
       let { data: profileData } = await (supabase as any).from('profiles').select('*').eq('id', userId).single();
       if (!profileData) {
@@ -44,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setProfile(profileData);
     } catch (err) {
       console.error('Error fetching user data:', err);
+      setRoleLoaded(true);
     }
   };
 
@@ -61,6 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }, 0);
       } else {
         setRole(null);
+        setRoleLoaded(false);
         setProfile(null);
       }
       setLoading(false);
@@ -97,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, roleLoaded, profile, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
