@@ -12,14 +12,20 @@ import { shouldRouteToOnboarding } from "@/lib/clientLifecycle";
 const db = supabase as any;
 
 const DashboardLayout = () => {
-  const { user, role, loading } = useAuth();
+  const { user, role, roleLoaded, loading } = useAuth();
   const location = useLocation();
   const [onboardingCheck, setOnboardingCheck] = useState<"checking" | "ok" | "needs_onboarding">("checking");
 
   useEffect(() => {
-    if (!user || loading) return;
+    if (!user || loading || !roleLoaded) return;
     // Only check for client role users
     if (role && role !== "client") {
+      setOnboardingCheck("ok");
+      return;
+    }
+
+    // If no role at all (e.g. orphan user), skip onboarding check
+    if (!role) {
       setOnboardingCheck("ok");
       return;
     }
@@ -45,7 +51,7 @@ const DashboardLayout = () => {
     };
 
     check();
-  }, [user, role, loading]);
+  }, [user, role, roleLoaded, loading]);
 
   if (loading || onboardingCheck === "checking") {
     return (
