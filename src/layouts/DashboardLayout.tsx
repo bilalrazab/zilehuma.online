@@ -2,14 +2,52 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardNav from "@/components/dashboard/DashboardNav";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import SEO from "@/components/SEO";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { shouldRouteToOnboarding } from "@/lib/clientLifecycle";
+
+const db = supabase as any;
 
 const DashboardLayout = () => {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
+  const location = useLocation();
+  const [onboardingCheck, setOnboardingCheck] = useState<"checking" | "ok" | "needs_onboarding">("checking");
 
-  if (loading) {
+  useEffect(() => {
+    if (!user || loading) return;
+    // Only check for client role users
+    if (role && role !== "client") {
+      setOnboardingCheck("ok");
+      return;
+    }
+
+    const check = async () => {
+      try {
+        const { data, error } = await db
+          .from("clients")
+          .select("id, user_id, status, full_name, phone, gender, date_of_birth, address, emergency_contact, emergency_phone, notes")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data && shouldRouteToOnboarding(data)) {
+          setOnboardingCheck("needs_onboarding");
+        } else {
+          setOnboardingCheck("ok");
+        }
+      } catch {
+        setOnboardingCheck("ok");
+      }
+    };
+
+    check();
+  }, [user, role, loading]);
+
+  if (loading || onboardingCheck === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 w-64">
@@ -22,6 +60,11 @@ const DashboardLayout = () => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // Redirect clients who haven't completed onboarding (but not if already on onboarding page)
+  if (onboardingCheck === "needs_onboarding" && location.pathname !== "/dashboard/onboarding") {
+    return <Navigate to="/dashboard/onboarding" replace />;
+  }
 
   return (
     <SidebarProvider>
