@@ -335,12 +335,15 @@ const ClientsPage = () => {
                       </div>
                       {isLead && c.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Source: {c.notes}</p>}
                     </div>
-                    <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
-                      {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
+                        {PIPELINE_STAGES.find(s => s.value === c.pipeline_stage)?.label || c.pipeline_stage || 'Active'}
+                      </Badge>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
             );
           })}
         </div>
