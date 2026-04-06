@@ -57,7 +57,7 @@ const DoctorDashboard = () => {
       db.from('clients').select('pipeline_stage'),
       db.from('appointments').select('*, clients(full_name)').gte('start_time', weekStart.toISOString()).lte('start_time', weekEnd.toISOString()).order('start_time'),
       db.from('notifications').select('*').eq('user_id', user?.id).eq('read', false).order('created_at', { ascending: false }).limit(5),
-      db.from('clients').select('*').order('created_at', { ascending: false }).limit(5),
+      db.from('clients').select('*').not('user_id', 'is', null).neq('status', 'pending_activation').order('created_at', { ascending: false }).limit(5),
       db.from('tasks').select('type, status'),
       db.from('timeline_logs').select('*, clients:client_id(full_name)').order('created_at', { ascending: false }).limit(15),
       db.from('appointments').select('*, clients(full_name, email, phone, user_id, pipeline_stage, notes)').eq('status', 'pending_approval').order('start_time'),

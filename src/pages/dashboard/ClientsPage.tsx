@@ -10,10 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info, Trash2 } from "lucide-react";
+import { Search, UserPlus, Phone, Mail, AlertTriangle, Users, CheckCircle2, XCircle, Loader2, Info, Trash2, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { sendWhatsApp } from "@/lib/whatsapp";
+import { isClientAwaitingActivation, isClientProfilePending, shouldAppearInClientList } from "@/lib/clientLifecycle";
 
 const db = supabase as any;
 
@@ -57,6 +58,7 @@ const ClientsPage = () => {
   });
   const [deleteTarget, setDeleteTarget] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -166,7 +168,44 @@ const ClientsPage = () => {
     }
   };
 
-  const filtered = clients.filter(c => {
+  const handleResendInvite = async (client: any) => {
+    if (!client?.email) {
+      toast({ title: "Missing email", description: "This client does not have an email address yet.", variant: "destructive" });
+      return;
+    }
+
+    setResendingId(client.id);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('invite-client', {
+        body: {
+          full_name: client.full_name || '',
+          email: client.email,
+          phone: client.phone || '',
+          redirect_url: `${window.location.origin}/reset-password`
+        }
+      });
+
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "Invitation re-sent",
+        description: `A fresh setup email has been sent to ${client.email}.`,
+      });
+
+      await load();
+    } catch (err: any) {
+      toast({ title: "Resend failed", description: err.message, variant: "destructive" });
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const directoryClients = clients.filter(shouldAppearInClientList);
+  const pendingInvites = clients.filter(isClientAwaitingActivation);
+
+  const filtered = directoryClients.filter(c => {
     const matchSearch = c.full_name?.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase());
     const matchStage = stageFilter === 'all' || c.pipeline_stage === stageFilter;
     return matchSearch && matchStage;
@@ -177,7 +216,7 @@ const ClientsPage = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-heading font-bold">Clients</h1>
-          <p className="text-sm text-muted-foreground">{clients.length} total</p>
+          <p className="text-sm text-muted-foreground">{directoryClients.length} in client list · {pendingInvites.length} pending access</p>
         </div>
         <Dialog open={inviteOpen} onOpenChange={(o) => { setInviteOpen(o); if (!o) resetInviteForm(); }}>
           <DialogTrigger asChild>
@@ -211,7 +250,7 @@ const ClientsPage = () => {
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription className="text-xs text-muted-foreground">
-                    The client should check their inbox (and spam/junk folder). The link expires in 24 hours.
+                    The client should check their inbox (and spam/junk folder). The setup link stays valid for 24 hours.
                     If they don't receive it, you can delete and re-invite them.
                   </AlertDescription>
                 </Alert>
@@ -280,9 +319,68 @@ const ClientsPage = () => {
         </Dialog>
       </div>
 
+      {pendingInvites.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h2 className="font-heading font-semibold text-base">Pending portal access</h2>
+                <p className="text-sm text-muted-foreground">These people are not in the main client list yet because they have not created their credentials.</p>
+              </div>
+              <Badge variant="secondary">{pendingInvites.length} pending</Badge>
+            </div>
+
+            <div className="grid gap-3">
+              {pendingInvites.map(c => {
+                const fromWebsite = (c.notes || '').toLowerCase().includes('source: website');
+                const resendLoading = resendingId === c.id;
+
+                return (
+                  <div key={c.id} className="rounded-2xl border border-border bg-background p-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-sm truncate">{c.full_name || 'Unnamed client'}</p>
+                          <Badge variant="outline" className="border-primary/30 bg-primary/10 text-primary">Awaiting credentials</Badge>
+                          {fromWebsite && <Badge variant="secondary">Website booking</Badge>}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                          {c.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{c.email}</span>}
+                          {c.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendInvite(c)}
+                          disabled={resendLoading}
+                        >
+                          {resendLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                          Re-send Invite
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => setDeleteTarget(c)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex gap-2 overflow-x-auto pb-2">
         {PIPELINE_STAGES.map(s => {
-          const count = s.value === 'all' ? clients.length : clients.filter(c => c.pipeline_stage === s.value).length;
+          const count = s.value === 'all' ? directoryClients.length : directoryClients.filter(c => c.pipeline_stage === s.value).length;
           return (
             <Button key={s.value} variant={stageFilter === s.value ? 'default' : 'outline'} size="sm" className="text-xs whitespace-nowrap"
               onClick={() => setStageFilter(s.value)}>
@@ -305,35 +403,35 @@ const ClientsPage = () => {
         <div className="text-center py-16">
           <Users className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
           <p className="text-muted-foreground font-medium text-lg">
-            {search || stageFilter !== 'all' ? 'No clients match your filters' : 'No clients yet'}
+            {search || stageFilter !== 'all' ? 'No clients match your filters' : 'No activated clients yet'}
           </p>
           {!search && stageFilter === 'all' && (
-            <p className="text-sm text-muted-foreground mt-1">Click "Invite Client" to add your first client</p>
+            <p className="text-sm text-muted-foreground mt-1">Invite a client or let them book online — they will appear here after setting up their portal access.</p>
           )}
         </div>
       ) : (
         <div className="grid gap-3">
           {filtered.map(c => {
-            const isLead = !c.user_id;
+            const profilePending = isClientProfilePending(c);
             return (
-              <Card key={c.id} className={`cursor-pointer hover:shadow-md transition-shadow ${c.risk_level === 'high' ? 'border-l-4 border-l-destructive' : c.risk_level === 'moderate' ? 'border-l-4 border-l-amber-400' : isLead ? 'border-l-4 border-l-blue-400' : ''}`}
+              <Card key={c.id} className={`cursor-pointer hover:shadow-md transition-shadow ${c.risk_level === 'high' ? 'border-l-4 border-l-destructive' : c.risk_level === 'moderate' ? 'border-l-4 border-l-amber-400' : profilePending ? 'border-l-4 border-l-primary' : ''}`}
                 onClick={() => navigate(`/dashboard/clients/${c.id}`)}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${isLead ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 bg-primary/10 text-primary">
                       {c.full_name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-semibold text-sm truncate">{c.full_name}</p>
-                        {isLead && <Badge className="text-[9px] h-4 px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" variant="outline">Website Lead</Badge>}
+                        {profilePending && <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-primary/30 bg-primary/10 text-primary">Profile setup pending</Badge>}
                         {c.risk_level === 'high' && <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />}
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                         {c.email && <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3" />{c.email}</span>}
                         {c.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{c.phone}</span>}
                       </div>
-                      {isLead && c.notes && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">Source: {c.notes}</p>}
+                      {profilePending && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">This client has created access but still needs to finish their profile.</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={`text-[10px] ${stageColors[c.pipeline_stage] || stageColors.active}`}>
