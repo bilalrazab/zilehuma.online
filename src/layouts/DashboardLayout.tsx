@@ -53,7 +53,7 @@ const DashboardLayout = () => {
     check();
   }, [user, role, roleLoaded, loading]);
 
-  if (loading || onboardingCheck === "checking") {
+  if (loading || !roleLoaded || onboardingCheck === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="space-y-4 w-64">
