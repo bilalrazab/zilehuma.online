@@ -147,6 +147,25 @@ const ClientsPage = () => {
     }
   };
 
+  const handleDeleteClient = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-client', {
+        body: { client_id: deleteTarget.id, delete_auth_user: true }
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Client deleted", description: `${deleteTarget.full_name} and all related records have been removed.` });
+      setDeleteTarget(null);
+      load();
+    } catch (err: any) {
+      toast({ title: "Delete failed", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const filtered = clients.filter(c => {
     const matchSearch = c.full_name?.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase());
     const matchStage = stageFilter === 'all' || c.pipeline_stage === stageFilter;
