@@ -56,6 +56,9 @@ const BookPage = () => {
     const loadAvailability = async () => {
       const { data } = await db.from("doctor_availability").select("*").eq("is_available", true);
       setAvailability(data || []);
+      if (!data || data.length === 0) {
+        console.log("No doctor availability configured — calendar will show no available dates.");
+      }
     };
     loadAvailability();
   }, []);
