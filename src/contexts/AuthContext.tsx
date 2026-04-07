@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -27,64 +27,97 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roleLoaded, setRoleLoaded] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const requestIdRef = useRef(0);
 
-  const fetchUserData = async (userId: string, email: string, fullName?: string) => {
+  const fetchUserData = async (nextUser: User) => {
+    const requestId = ++requestIdRef.current;
+
+    setLoading(true);
+    setRoleLoaded(false);
+
     try {
-      const { data: roleRows } = await (supabase as any).from('user_roles').select('role').eq('user_id', userId);
-      const roleData = roleRows?.find((r: any) => r.role === 'super_admin' || r.role === 'doctor') || roleRows?.[0] || null;
-      setRole(roleData?.role || null);
-      setRoleLoaded(true);
+      const [roleResult, profileResult] = await Promise.all([
+        supabase.rpc('get_user_role', { _user_id: nextUser.id }),
+        (supabase as any).from('profiles').select('*').eq('id', nextUser.id).maybeSingle(),
+      ]);
 
-      let { data: profileData } = await (supabase as any).from('profiles').select('*').eq('id', userId).single();
+      if (requestId !== requestIdRef.current) return;
+
+      if (roleResult.error) throw roleResult.error;
+      if (profileResult.error) throw profileResult.error;
+
+      let profileData = profileResult.data;
+
       if (!profileData) {
-        const { data: newProfile } = await (supabase as any).from('profiles').insert({
-          id: userId,
-          full_name: fullName || email,
-          email: email,
-        }).select().single();
+        const { data: newProfile, error: createProfileError } = await (supabase as any)
+          .from('profiles')
+          .upsert({
+            id: nextUser.id,
+            full_name: nextUser.user_metadata?.full_name || nextUser.email || '',
+            email: nextUser.email || '',
+          }, { onConflict: 'id' })
+          .select()
+          .maybeSingle();
+
+        if (requestId !== requestIdRef.current) return;
+        if (createProfileError) throw createProfileError;
+
         profileData = newProfile;
       }
-      setProfile(profileData);
+
+      setRole((roleResult.data as AppRole) || null);
+      setProfile(profileData || null);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error('Error fetching user data:', err);
+      setRole(null);
+      setProfile(null);
+    } finally {
+      if (requestId !== requestIdRef.current) return;
       setRoleLoaded(true);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => {
-          fetchUserData(
-            session.user.id,
-            session.user.email || '',
-            session.user.user_metadata?.full_name
-          );
-        }, 0);
-      } else {
+    let isActive = true;
+    let initialSessionResolved = false;
+
+    const syncAuthState = (nextSession: Session | null) => {
+      if (!isActive) return;
+
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (!nextSession?.user) {
+        requestIdRef.current += 1;
         setRole(null);
-        setRoleLoaded(false);
+        setRoleLoaded(true);
         setProfile(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      void fetchUserData(nextSession.user);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!isActive) return;
+      if (!initialSessionResolved && event === 'INITIAL_SESSION') return;
+      syncAuthState(nextSession);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserData(
-          session.user.id,
-          session.user.email || '',
-          session.user.user_metadata?.full_name
-        );
-      }
-      setLoading(false);
+      if (!isActive) return;
+      initialSessionResolved = true;
+      syncAuthState(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isActive = false;
+      requestIdRef.current += 1;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = (email: string, password: string) =>
