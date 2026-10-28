@@ -2,7 +2,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const faqs = [
   {
-    q: "Who is Zil-e-Huma Sulemans?",
+    q: "Who is Zil-e-Huma SulemansS?",
     a: "Zil-e-Huma Suleman is a qualified Clinical Psychologist based in Islamabad, Pakistan. She specializes in creating safe, compassionate spaces for healing using evidence-based therapy and genuine human connection.",
   },
   {
